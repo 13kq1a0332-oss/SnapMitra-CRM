@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS leads (
     client_phone TEXT NOT NULL,
     client_email TEXT DEFAULT '',
     event_type TEXT NOT NULL CHECK (event_type IN ('Wedding', 'Pre-Wedding', 'Birthday', 'Corporate', 'Other')),
+    custom_event_name TEXT DEFAULT '',
     event_date DATE NOT NULL,
     guest_count INTEGER DEFAULT 0,
     chat_summary TEXT,
@@ -31,6 +32,9 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'client_email') THEN
         ALTER TABLE leads ADD COLUMN client_email TEXT DEFAULT '';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'custom_event_name') THEN
+        ALTER TABLE leads ADD COLUMN custom_event_name TEXT DEFAULT '';
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'notes') THEN
         ALTER TABLE leads ADD COLUMN notes TEXT DEFAULT '';

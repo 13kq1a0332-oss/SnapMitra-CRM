@@ -51,29 +51,32 @@ export function calculateBaseQuote(
 
 export function cleanContactInfo(rawInput: string): { phone: string; email?: string } {
   const trimmed = rawInput.trim();
-  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) || trimmed.includes('@');
 
-  if (isEmail) {
-    return {
-      phone: 'Provided via Email',
-      email: trimmed,
-    };
-  }
+  // 1. Detect if an email is present anywhere in the text
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+  const emailMatch = trimmed.match(emailRegex);
+  const email = emailMatch ? emailMatch[0].trim() : undefined;
 
-  // It's a phone number
-  const digitsOnly = trimmed.replace(/[^0-9]/g, '');
+  // 2. Extract phone number digits from text excluding the email part
+  const textWithoutEmail = email ? trimmed.replace(email, ' ') : trimmed;
+  const digitsOnly = textWithoutEmail.replace(/[^0-9]/g, '');
+
+  let phone: string;
   if (digitsOnly.length === 10) {
-    return {
-      phone: `+91 ${digitsOnly.slice(0, 5)} ${digitsOnly.slice(5)}`,
-    };
+    phone = `+91 ${digitsOnly.slice(0, 5)} ${digitsOnly.slice(5)}`;
   } else if (digitsOnly.length === 12 && digitsOnly.startsWith('91')) {
-    return {
-      phone: `+91 ${digitsOnly.slice(2, 7)} ${digitsOnly.slice(7)}`,
-    };
+    phone = `+91 ${digitsOnly.slice(2, 7)} ${digitsOnly.slice(7)}`;
+  } else if (digitsOnly.length >= 7) {
+    phone = digitsOnly.startsWith('91') ? `+${digitsOnly}` : `+91 ${digitsOnly}`;
+  } else if (email) {
+    phone = 'Provided via Email';
+  } else {
+    phone = trimmed.startsWith('+') ? trimmed : `+91 ${trimmed}`;
   }
 
   return {
-    phone: trimmed.startsWith('+') ? trimmed : `+91 ${trimmed}`,
+    phone,
+    email,
   };
 }
 
@@ -81,6 +84,7 @@ export function generateWhatsAppPitch(
   lead: {
     client_name: string;
     event_type: string;
+    custom_event_name?: string;
     event_date: string;
     calculated_quote: number;
     chat_summary?: string;
@@ -93,20 +97,21 @@ export function generateWhatsAppPitch(
   const addonText = lead.selected_addons && lead.selected_addons.length > 0
     ? `including your requested add-ons (${lead.selected_addons.join(', ')})`
     : '';
+  const eventName = lead.custom_event_name || (lead.event_type === 'Other' ? 'special celebration' : lead.event_type);
 
   switch (template) {
     case 'urgency_hold':
-      return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 Regarding your ${lead.event_type} on ${lead.event_date}: this is a peak auspicious Muhurtham date and we have received 2 other inquiries. We have placed a temporary 48-Hour Priority Hold on our ${packageType} cinema team for you. Let us know if you would like a quick 5-minute video call today to secure your date!`;
+      return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 Regarding your ${eventName} on ${lead.event_date}: this is a peak auspicious Muhurtham date and we have received 2 other inquiries. We have placed a temporary 48-Hour Priority Hold on our ${packageType} cinema team for you. Let us know if you would like a quick 5-minute video call today to secure your date!`;
 
     case 'festival_bonus':
-      return `Namaste ${lead.client_name}! ✨ PixelStory Studios Hyderabad here. We loved reviewing your ${lead.event_type} vision for ${lead.event_date}. If you confirm your ${packageType} Package reservation this week, we are happy to bundle complimentary 4K Aerial Drone Coverage worth ₹20,000 for your main ceremony. Let's create magic together!`;
+      return `Namaste ${lead.client_name}! ✨ PixelStory Studios Hyderabad here. We loved reviewing your ${eventName} vision for ${lead.event_date}. If you confirm your ${packageType} Package reservation this week, we are happy to bundle complimentary 4K Aerial Drone Coverage worth ₹20,000 for your main ceremony. Let's create magic together!`;
 
     case 'call_confirm':
       return `Hi ${lead.client_name}! PixelStory Studios Hyderabad. 📞 Our Lead Photographer Vikram is scheduled to give you a brief call this evening to discuss your camera setups, venue lighting, and wedding film style for ${lead.event_date}. Looking forward to speaking with you!`;
 
     case 'initial':
     default:
-      return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming ${lead.event_type} on ${lead.event_date}. We have blocked our premium ${packageType} package equipment for you ${addonText}. Our head photographer is reviewing your ${summaryText} and will give you a quick call shortly. Looking forward to capturing your beautiful memories!`;
+      return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming ${eventName} on ${lead.event_date}. We have blocked our premium ${packageType} package equipment for you ${addonText}. Our head photographer is reviewing your ${summaryText} and will give you a quick call shortly. Looking forward to capturing your beautiful memories!`;
   }
 }
 
@@ -175,6 +180,7 @@ export const leadService = {
       client_phone: payload.client_phone,
       client_email: payload.client_email || '',
       event_type: payload.event_type,
+      custom_event_name: payload.custom_event_name || '',
       event_date: payload.event_date,
       guest_count: payload.guest_count,
       chat_summary: payload.chat_summary,
@@ -189,13 +195,20 @@ export const leadService = {
 
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase.from('leads').insert([newLead]).select().single();
-        if (!error && data) {
-          const current = getLocalLeads();
-          setLocalLeads([data as Lead, ...current]);
-          return data as Lead;
+        let insertRes = await supabase.from('leads').insert([newLead]).select().single();
+        // If Supabase schema hasn't added custom_event_name column yet, retry without that field
+        if (insertRes.error && insertRes.error.message && insertRes.error.message.includes('custom_event_name')) {
+          const { custom_event_name, ...fallbackPayload } = newLead;
+          insertRes = await supabase.from('leads').insert([fallbackPayload]).select().single();
         }
-        console.warn('Supabase insert failed, fallback to local', error);
+
+        if (!insertRes.error && insertRes.data) {
+          const mergedLead = { ...newLead, ...insertRes.data };
+          const current = getLocalLeads();
+          setLocalLeads([mergedLead, ...current]);
+          return mergedLead;
+        }
+        console.warn('Supabase insert failed, fallback to local', insertRes.error);
       } catch (err) {
         console.warn('Supabase insert exception, fallback to local', err);
       }

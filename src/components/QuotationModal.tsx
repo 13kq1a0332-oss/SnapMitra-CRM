@@ -113,7 +113,7 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({ lead, isOpen, on
                 Event Reservation Details:
               </span>
               <div className="text-sm font-semibold text-white print:text-black">
-                {lead.event_type} Celebration
+                {lead.custom_event_name ? `${lead.custom_event_name} Celebration` : `${lead.event_type} Celebration`}
               </div>
               <p className="text-xs text-gray-300 print:text-gray-700">
                 Date: <strong className="font-mono">{lead.event_date}</strong> (~{lead.guest_count} Guests)

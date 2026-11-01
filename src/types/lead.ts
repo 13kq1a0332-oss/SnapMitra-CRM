@@ -11,6 +11,7 @@ export interface Lead {
   client_phone: string;
   client_email?: string;
   event_type: EventType;
+  custom_event_name?: string;
   event_date: string;
   guest_count: number;
   chat_summary: string;

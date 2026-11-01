@@ -25,7 +25,7 @@ interface ChatMessage {
   isGuardrail?: boolean;
 }
 
-type Step = 'name' | 'phone' | 'event_type' | 'event_date' | 'guest_count' | 'addons' | 'completed';
+type Step = 'name' | 'phone' | 'event_type' | 'custom_event_name' | 'event_date' | 'guest_count' | 'addons' | 'completed';
 
 export const SnapBotModal: React.FC = () => {
   const {
@@ -51,6 +51,7 @@ export const SnapBotModal: React.FC = () => {
     phone: string;
     email?: string;
     eventType: EventType;
+    customEventName?: string;
     eventDate: string;
     guestCount: number;
     quote: number;
@@ -60,6 +61,7 @@ export const SnapBotModal: React.FC = () => {
     phone: '',
     email: '',
     eventType: 'Wedding',
+    customEventName: '',
     eventDate: '',
     guestCount: 300,
     quote: 150000,
@@ -99,17 +101,28 @@ export const SnapBotModal: React.FC = () => {
 
     if (preselectedPackage) {
       if (preselectedPackage.toLowerCase().includes('traditional') || preselectedPackage.toLowerCase().includes('gold')) {
-        setLeadData((prev) => ({ ...prev, eventType: 'Wedding' }));
+        setLeadData((prev) => ({ ...prev, eventType: 'Wedding', customEventName: '' }));
       } else if (preselectedPackage.toLowerCase().includes('candid') || preselectedPackage.toLowerCase().includes('platinum')) {
-        setLeadData((prev) => ({ ...prev, eventType: 'Wedding' }));
+        setLeadData((prev) => ({ ...prev, eventType: 'Wedding', customEventName: '' }));
       } else if (preselectedPackage.toLowerCase().includes('pre-wedding') || preselectedPackage.toLowerCase().includes('outdoor')) {
-        setLeadData((prev) => ({ ...prev, eventType: 'Pre-Wedding' }));
+        setLeadData((prev) => ({ ...prev, eventType: 'Pre-Wedding', customEventName: '' }));
       }
     }
 
     setCurrentStep('name');
     setCompletedLeadSummary(null);
     setSelectedAddons([]);
+    setLeadData({
+      name: '',
+      phone: '',
+      email: '',
+      eventType: 'Wedding',
+      customEventName: '',
+      eventDate: '',
+      guestCount: 300,
+      quote: 150000,
+      label: 'High-Value',
+    });
   };
 
   useEffect(() => {
@@ -244,24 +257,77 @@ export const SnapBotModal: React.FC = () => {
     }
 
     if (currentStep === 'event_type') {
-      let chosenType: EventType = 'Wedding';
-      const lower = input.toLowerCase();
+      const lower = input.toLowerCase().trim();
+
       if (lower.includes('pre-wedding') || lower.includes('pre wedding') || lower.includes('outdoor')) {
-        chosenType = 'Pre-Wedding';
-      } else if (lower.includes('birthday')) {
-        chosenType = 'Birthday';
-      } else if (lower.includes('corporate') || lower.includes('conference')) {
-        chosenType = 'Corporate';
-      } else if (lower.includes('wedding') || lower.includes('marriage') || lower.includes('reception')) {
-        chosenType = 'Wedding';
-      } else {
-        chosenType = 'Other';
+        setLeadData((prev) => ({ ...prev, eventType: 'Pre-Wedding', customEventName: '' }));
+        setCurrentStep('event_date');
+        addBotMessage(
+          `Splendid! A Pre-Wedding celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
+        );
+        return;
       }
 
-      setLeadData((prev) => ({ ...prev, eventType: chosenType }));
+      if (lower.includes('birthday')) {
+        setLeadData((prev) => ({ ...prev, eventType: 'Birthday', customEventName: '' }));
+        setCurrentStep('event_date');
+        addBotMessage(
+          `Splendid! A Birthday celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
+        );
+        return;
+      }
+
+      if (lower.includes('corporate') || lower.includes('conference') || lower.includes('summit') || lower.includes('seminar')) {
+        setLeadData((prev) => ({ ...prev, eventType: 'Corporate', customEventName: '' }));
+        setCurrentStep('event_date');
+        addBotMessage(
+          `Splendid! A Corporate celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
+        );
+        return;
+      }
+
+      if (lower.includes('wedding') || lower.includes('marriage') || lower.includes('reception')) {
+        setLeadData((prev) => ({ ...prev, eventType: 'Wedding', customEventName: '' }));
+        setCurrentStep('event_date');
+        addBotMessage(
+          `Splendid! A Wedding celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
+        );
+        return;
+      }
+
+      // If user selected or typed "Other" / "Others"
+      if (lower === 'other' || lower === 'others' || lower === 'other event' || lower === 'something else') {
+        setLeadData((prev) => ({ ...prev, eventType: 'Other', customEventName: '' }));
+        setCurrentStep('custom_event_name');
+        addBotMessage(
+          `Wonderful! PixelStory Studios crafts bespoke cinematography for all special milestones. 🌟\nCould you please tell me what kind of event you're celebrating? (e.g. Housewarming, Half-Saree, Baby Shower, Anniversary, Fashion Shoot)`
+        );
+        return;
+      }
+
+      // If the user typed a specific celebration directly (e.g. "Housewarming", "Half-Saree", "Anniversary")
+      const customName = input.trim();
+      const article = /^[aeiou]/i.test(customName) ? 'An' : 'A';
+      setLeadData((prev) => ({ ...prev, eventType: 'Other', customEventName: customName }));
       setCurrentStep('event_date');
       addBotMessage(
-        `Splendid! A ${chosenType} celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
+        `Splendid! ${article} ${customName} celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
+      );
+      return;
+    }
+
+    if (currentStep === 'custom_event_name') {
+      const cleanCustom = input.replace(/^(it is|it's|we have|an|a)\s*/i, '').trim();
+      const finalCustomName = cleanCustom || 'Special Celebration';
+      const article = /^[aeiou]/i.test(finalCustomName) ? 'An' : 'A';
+      setLeadData((prev) => ({
+        ...prev,
+        eventType: 'Other',
+        customEventName: finalCustomName,
+      }));
+      setCurrentStep('event_date');
+      addBotMessage(
+        `Splendid! ${article} ${finalCustomName} celebration. When is your planned event date? (e.g. 2026-12-14 or December 14)`
       );
       return;
     }
@@ -305,6 +371,8 @@ export const SnapBotModal: React.FC = () => {
     setIsTyping(true);
 
     const eventType = leadData.eventType;
+    const customName = leadData.customEventName;
+    const friendlyEventName = customName || eventType;
     const name = leadData.name;
     const date = leadData.eventDate;
     const phone = leadData.phone;
@@ -316,13 +384,14 @@ export const SnapBotModal: React.FC = () => {
 
     const addonPhrase = addons.length > 0 ? ` Addons requested: ${addons.join(', ')}.` : '';
 
-    const chatSummary = `Exclusive ${eventType} celebration for ~${guests} guests on ${date}.\nClient requested ${
+    const chatSummary = `Exclusive ${friendlyEventName} celebration for ~${guests} guests on ${date}.\nClient requested ${
       isLuxury ? 'Platinum luxury coverage with 4K cinema & candid team' : 'Gold standard coverage package'
     }.${addonPhrase}`;
 
     const whatsappDraft = generateWhatsAppPitch({
       client_name: name,
       event_type: eventType,
+      custom_event_name: customName,
       event_date: date,
       calculated_quote: calculatedQuote,
       chat_summary: chatSummary,
@@ -331,7 +400,7 @@ export const SnapBotModal: React.FC = () => {
 
     const finalEndingMessage = `Thank you, ${name}! We are checking our camera schedules for ${date}. Our studio will reach out to you shortly.`;
 
-    const quoteMessage = `Based on your ${eventType} details${addons.length > 0 ? ` and selected upgrades` : ''}, your total investment quote is ${formatINR(
+    const quoteMessage = `Based on your ${friendlyEventName} details${addons.length > 0 ? ` and selected upgrades` : ''}, your total investment quote is ${formatINR(
       calculatedQuote
     )} (${isLuxury ? 'Platinum Luxury Package' : 'Gold Standard Package'}).`;
 
@@ -359,6 +428,7 @@ export const SnapBotModal: React.FC = () => {
           client_phone: phone,
           client_email: email,
           event_type: eventType,
+          custom_event_name: customName,
           event_date: date,
           guest_count: guests,
           chat_summary: chatSummary,
@@ -367,7 +437,13 @@ export const SnapBotModal: React.FC = () => {
           calculated_quote: calculatedQuote,
           whatsapp_draft: whatsappDraft,
           selected_addons: addons,
-          notes: email ? `Client Email: ${email}` : 'Captured via SnapBot with Guardrail validation',
+          notes: [
+            customName ? `Celebration: ${customName}` : '',
+            email ? `Client Email: ${email}` : '',
+            'Captured via SnapBot with Guardrail validation',
+          ]
+            .filter(Boolean)
+            .join(' | '),
         });
 
         setCompletedLeadSummary({
@@ -582,6 +658,27 @@ export const SnapBotModal: React.FC = () => {
           </div>
         )}
 
+        {currentStep === 'custom_event_name' && (
+          <div className="px-4 py-2 bg-[#14141C] border-t border-[#27272E] flex flex-wrap gap-2 animate-fadeIn">
+            {[
+              'Half-Saree Ceremony',
+              'Housewarming (Gruhapravesam)',
+              'Baby Shower (Seemantham)',
+              '25th / 50th Silver Anniversary',
+              'Fashion & Portfolio Shoot',
+              'Engagement / Ring Ceremony',
+            ].map((customOption) => (
+              <button
+                key={customOption}
+                onClick={() => handleQuickChipSelect(customOption)}
+                className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#1E1E28] hover:bg-[#D4AF37] hover:text-black border border-[#333342] hover:border-[#D4AF37] transition-all"
+              >
+                {customOption}
+              </button>
+            ))}
+          </div>
+        )}
+
         {currentStep === 'guest_count' && (
           <div className="px-4 py-2 bg-[#14141C] border-t border-[#27272E] flex flex-wrap gap-2">
             {['100 guests', '300 guests', '600 guests', '1000+ guests'].map((cnt) => (
@@ -664,6 +761,8 @@ export const SnapBotModal: React.FC = () => {
                 ? 'Type or speak your name...'
                 : currentStep === 'phone'
                 ? 'Type WhatsApp number or Email ID (e.g. name@gmail.com)...'
+                : currentStep === 'custom_event_name'
+                ? 'Type celebration name (e.g. Half-Saree, Housewarming, Anniversary)...'
                 : currentStep === 'event_date'
                 ? 'Type event date (e.g. 2026-12-14)...'
                 : 'Ask SnapBot a question or enter details...'

@@ -45,6 +45,7 @@ export const AdminDashboard: React.FC = () => {
     client_phone: '',
     client_email: '',
     event_type: 'Wedding' as EventType,
+    custom_event_name: '',
     event_date: '',
     guest_count: 500,
     quote: 150000,
@@ -69,10 +70,12 @@ export const AdminDashboard: React.FC = () => {
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       const emailMatch = lead.client_email?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+      const customMatch = lead.custom_event_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
       const matchesSearch =
         lead.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.client_phone.includes(searchQuery) ||
         emailMatch ||
+        customMatch ||
         lead.event_type.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
@@ -148,10 +151,12 @@ export const AdminDashboard: React.FC = () => {
     const cleanContact = cleanContactInfo(manualForm.client_phone || manualForm.client_email);
     const calculated = manualForm.quote || calculateBaseQuote(manualForm.event_type, 'Gold');
     const label = determineLeadLabel(manualForm.event_type);
-    const summary = `Manual walk-in inquiry for ${manualForm.event_type} (~${manualForm.guest_count} guests) on ${manualForm.event_date}.\nNotes: ${manualForm.notes || 'None'}`;
+    const eventDisplayName = manualForm.custom_event_name || manualForm.event_type;
+    const summary = `Manual walk-in inquiry for ${eventDisplayName} (~${manualForm.guest_count} guests) on ${manualForm.event_date}.\nNotes: ${manualForm.notes || 'None'}`;
     const draft = generateWhatsAppPitch({
       client_name: manualForm.client_name,
       event_type: manualForm.event_type,
+      custom_event_name: manualForm.custom_event_name,
       event_date: manualForm.event_date,
       calculated_quote: calculated,
       chat_summary: summary,
@@ -162,6 +167,7 @@ export const AdminDashboard: React.FC = () => {
       client_phone: cleanContact.phone,
       client_email: manualForm.client_email || cleanContact.email || '',
       event_type: manualForm.event_type,
+      custom_event_name: manualForm.custom_event_name,
       event_date: manualForm.event_date,
       guest_count: manualForm.guest_count,
       chat_summary: summary,
@@ -169,7 +175,10 @@ export const AdminDashboard: React.FC = () => {
       status: 'New',
       calculated_quote: calculated,
       whatsapp_draft: draft,
-      notes: manualForm.notes,
+      notes: [
+        manualForm.custom_event_name ? `Celebration: ${manualForm.custom_event_name}` : '',
+        manualForm.notes,
+      ].filter(Boolean).join(' | '),
     });
 
     setIsManualModalOpen(false);
@@ -178,6 +187,7 @@ export const AdminDashboard: React.FC = () => {
       client_phone: '',
       client_email: '',
       event_type: 'Wedding',
+      custom_event_name: '',
       event_date: '',
       guest_count: 500,
       quote: 150000,
@@ -456,7 +466,14 @@ export const AdminDashboard: React.FC = () => {
 
                         {/* Event Type */}
                         <td className="py-4 px-4 text-gray-200">
-                          <span className="font-medium">{lead.event_type}</span>
+                          <span className="font-medium">
+                            {lead.custom_event_name ? lead.custom_event_name : lead.event_type}
+                          </span>
+                          {lead.custom_event_name && (
+                            <span className="text-[10px] text-[#D4AF37] block font-mono">
+                              Other Celebration
+                            </span>
+                          )}
                           <span className="text-[11px] text-gray-500 block">
                             ~{lead.guest_count} guests
                           </span>
@@ -603,6 +620,21 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {manualForm.event_type === 'Other' && (
+                <div className="animate-fadeIn">
+                  <label className="block text-xs text-[#D4AF37] font-semibold mb-1">
+                    Specific Celebration Name (e.g. Half-Saree, Housewarming, Anniversary)
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.custom_event_name}
+                    onChange={(e) => setManualForm({ ...manualForm, custom_event_name: e.target.value })}
+                    placeholder="e.g. Half-Saree Ceremony / Housewarming"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#D4AF37]/50 focus:border-[#D4AF37] text-xs outline-none text-white"
+                  />
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2">
                 <div>

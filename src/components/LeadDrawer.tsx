@@ -57,6 +57,7 @@ export const LeadDrawer: React.FC = () => {
     {
       client_name: selectedLead.client_name,
       event_type: selectedLead.event_type,
+      custom_event_name: selectedLead.custom_event_name,
       event_date: selectedLead.event_date,
       calculated_quote: selectedLead.calculated_quote,
       chat_summary: selectedLead.chat_summary,
@@ -180,9 +181,12 @@ export const LeadDrawer: React.FC = () => {
               <div className="p-3.5 rounded-xl bg-[#16161E] border border-[#27272E]">
                 <span className="text-[11px] text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
                   <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Event Date</span>
+                  <span>Celebration &amp; Date</span>
                 </span>
-                <span className="font-mono text-sm font-semibold text-gray-100">
+                <span className="font-semibold text-sm text-gray-100 block">
+                  {selectedLead.custom_event_name || selectedLead.event_type}
+                </span>
+                <span className="font-mono text-xs text-gray-400">
                   {selectedLead.event_date}
                 </span>
               </div>
