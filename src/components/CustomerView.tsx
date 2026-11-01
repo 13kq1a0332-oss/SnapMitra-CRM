@@ -11,6 +11,8 @@ import {
   Star,
   Quote,
   X,
+  ChevronDown,
+  HelpCircle,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 
@@ -71,9 +73,29 @@ const TESTIMONIALS = [
   },
 ];
 
+const FAQS = [
+  {
+    q: "How far in advance should we reserve our Hyderabad wedding date?",
+    a: "Because auspicious Telugu Muhurtham dates have exceptionally high demand, most couples book 4 to 8 months in advance. We recommend locking your date with a 40% token as soon as your venue (e.g. Taj Falaknuma, Novotel HICC, Ramoji) is confirmed.",
+  },
+  {
+    q: "Do you travel outside Hyderabad for destination shoots?",
+    a: "Yes! While our primary flagship studio is located in Jubilee Hills, Hyderabad, our master crew frequently documents destination weddings across Goa, Udaipur, Vizag, and Bangalore. For destination events, our lead photographer provides a customized travel schedule.",
+  },
+  {
+    q: "When do we receive our edited cinema teasers and albums?",
+    a: "You receive a 48-Hour Rapid Sneak Peek Teaser for Instagram and family sharing. Full color-graded 4K cinematic films and handcrafted royal leather albums are delivered within 30–45 business days.",
+  },
+  {
+    q: "What production gear does PixelStory Studios use?",
+    a: "We shoot exclusively on Sony Cinema Line cameras (FX6, FX3) and G-Master prime lenses, paired with licensed DJI 4K drone aerials, multi-track audio engineering, and calibrated ambient lighting.",
+  },
+];
+
 export const CustomerView: React.FC = () => {
   const { openSnapBotWithPackage, setIsSnapBotOpen, setIsPackageCustomizerOpen } = useLeads();
   const [activeLightbox, setActiveLightbox] = useState<PortfolioGalleryItem | null>(null);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const offerings = [
     {
@@ -217,14 +239,12 @@ export const CustomerView: React.FC = () => {
                   : 'border-[#27272E] hover:border-[#D4AF37]/40 hover:-translate-y-1'
               }`}
             >
-              {/* Featured Badge */}
               {pkg.highlight && (
                 <div className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black text-[11px] font-bold uppercase tracking-wider py-1 px-4 text-center">
                   ⭐ Studio Masterpiece • Most Requested
                 </div>
               )}
 
-              {/* Image Preview */}
               <div className="relative h-56 sm:h-64 overflow-hidden">
                 <img
                   src={pkg.image}
@@ -233,14 +253,12 @@ export const CustomerView: React.FC = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#131316] via-[#131316]/30 to-transparent" />
                 
-                {/* Package Tier Badge */}
                 <div className="absolute top-4 left-4">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md shadow-md border ${pkg.badgeColor}`}>
                     {pkg.packageTier}
                   </span>
                 </div>
 
-                {/* Price Display */}
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                   <div>
                     <span className="text-[11px] text-gray-300 uppercase tracking-widest block font-medium">
@@ -253,7 +271,6 @@ export const CustomerView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Card Body */}
               <div className="p-6 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="font-serif text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors">
@@ -265,7 +282,6 @@ export const CustomerView: React.FC = () => {
 
                   <div className="my-5 border-t border-[#27272E]" />
 
-                  {/* Feature List */}
                   <ul className="space-y-2.5 text-xs text-gray-300">
                     {pkg.features.map((feat, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
@@ -276,7 +292,6 @@ export const CustomerView: React.FC = () => {
                   </ul>
                 </div>
 
-                {/* Action Button */}
                 <div className="mt-6 pt-4 border-t border-[#27272E]/60 space-y-2">
                   <button
                     onClick={() => openSnapBotWithPackage(pkg.name)}
@@ -296,7 +311,7 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
-      {/* Real Hyderabad Weddings Showcase (Enhancement) */}
+      {/* Real Hyderabad Weddings Showcase */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
           <div>
@@ -348,7 +363,7 @@ export const CustomerView: React.FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="text-center mb-10">
           <span className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37] block mb-1">
             Client Stories
@@ -382,6 +397,53 @@ export const CustomerView: React.FC = () => {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* FAQ Accordion Section (Enhancement) */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+            <HelpCircle className="w-4 h-4" />
+            <span>Got Questions?</span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">
+            Everything you need to know about booking with PixelStory Studios
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={idx}
+                className="rounded-xl border border-[#27272E] bg-[#14141A] overflow-hidden transition-all"
+              >
+                <button
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 hover:bg-[#1A1A22] transition-colors"
+                >
+                  <span className="font-serif font-semibold text-sm sm:text-base text-gray-200">
+                    {faq.q}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-[#D4AF37] shrink-0 transition-transform duration-300 ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-4 text-xs sm:text-sm text-gray-400 font-sans leading-relaxed border-t border-[#23232D] pt-3">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 

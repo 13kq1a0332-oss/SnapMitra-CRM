@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, ShieldCheck, Sparkles, LogOut, Database, UserCheck } from 'lucide-react';
+import { Camera, ShieldCheck, Sparkles, LogOut, Database, UserCheck, Smartphone } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 import { AdminLoginModal } from './AdminLoginModal';
+import { QRCodeModal } from './QRCodeModal';
 
 export const Navbar: React.FC = () => {
   const {
@@ -14,6 +15,7 @@ export const Navbar: React.FC = () => {
   } = useLeads();
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   const handleAdminToggle = () => {
     if (activeView === 'admin') {
@@ -35,7 +37,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#0B0B0C]/85 border-b border-[#27272E] transition-all">
+      <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#0B0B0C]/85 border-b border-[#27272E] transition-all print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Brand Logo & Title */}
           <div 
@@ -55,17 +57,27 @@ export const Navbar: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 font-sans tracking-wide">
-                Luxury Wedding & Candid Cinematography CRM
+                Luxury Wedding &amp; Candid Cinematography CRM
               </p>
             </div>
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Mobile Scan Button */}
+            <button
+              onClick={() => setIsQRModalOpen(true)}
+              title="Scan QR Code to test on Mobile"
+              className="px-2.5 py-1.5 rounded-xl bg-[#141418] hover:bg-[#1E1E24] border border-[#27272E] hover:border-[#D4AF37]/50 text-gray-300 hover:text-[#D4AF37] text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="hidden sm:inline">Mobile Test</span>
+            </button>
+
             {/* Database indicator */}
             <div
               title={isUsingSupabase ? 'Connected to live Supabase PostgreSQL' : 'Active Local Database (Ready for Supabase)'}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border bg-[#141418] border-[#2A2A33] text-gray-400"
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-[#141418] border-[#2A2A33] text-gray-400"
             >
               <Database className={`w-3.5 h-3.5 ${isUsingSupabase ? 'text-emerald-400' : 'text-[#D4AF37]'}`} />
               <span>{isUsingSupabase ? 'Supabase Live' : 'Postgres Mode'}</span>
@@ -127,7 +139,12 @@ export const Navbar: React.FC = () => {
           setActiveView('admin');
         }}
       />
+
+      {/* QR Code Mobile Test Modal */}
+      <QRCodeModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+      />
     </>
   );
 };
-
