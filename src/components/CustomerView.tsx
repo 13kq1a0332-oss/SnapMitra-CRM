@@ -1,9 +1,79 @@
-import React from 'react';
-import { Sparkles, Check, ArrowRight, Award, ShieldCheck, Film } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Sparkles,
+  Check,
+  ArrowRight,
+  Award,
+  ShieldCheck,
+  Film,
+  Calculator,
+  Camera,
+  Star,
+  Quote,
+  X,
+} from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 
+interface PortfolioGalleryItem {
+  id: string;
+  title: string;
+  location: string;
+  gear: string;
+  image: string;
+  description: string;
+}
+
+const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
+  {
+    id: 'falaknuma',
+    title: 'The Nizam Royal Palace Union',
+    location: 'Taj Falaknuma Palace, Hyderabad',
+    gear: 'Sony FX6 & FX3 • Master 85mm f/1.4 • DJI Inspire 3 8K',
+    image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
+    description: 'A grand Telugu royal celebration overlooking the City of Pearls, captured with cinematic color grading.',
+  },
+  {
+    id: 'ananthagiri',
+    title: 'Sunset Mist Romance',
+    location: 'Ananthagiri Hills, Vikarabad',
+    gear: 'Canon Cinema EOS • Anamorphic Primes • 4K Drone Fleet',
+    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+    description: 'Golden-hour couple portraiture framed against pine trees and mist-draped hilltops.',
+  },
+  {
+    id: 'jubilee',
+    title: 'The Heritage Muhurtham',
+    location: 'Jubilee Hills Heritage Gardens',
+    gear: 'Dual Sony A7S III • Steadicam Master Rig • Live LED stream',
+    image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+    description: 'Traditional Telugu rituals, sacred fire embers, and candid familial emotions documented raw.',
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "PixelStory Studios immortalized our Taj Falaknuma wedding! The candid cinema film made everyone tear up. The SnapBot quote was exact, zero hidden fees.",
+    couple: "Siddharth & Ananya Reddy",
+    venue: "Taj Falaknuma Palace, Hyderabad",
+    rating: 5,
+  },
+  {
+    quote: "From our sunrise pre-wedding at Ananthagiri to the grand reception at Novotel HICC, Vikram's team worked with incredible warmth and perfection.",
+    couple: "Vikram & Sneha Varma",
+    venue: "Novotel HICC Hyderabad",
+    rating: 5,
+  },
+  {
+    quote: "The live drone stream and same-day teaser reel were mind-blowing. Our guests were stunned by the film quality. Truly Hyderabad's finest studio.",
+    couple: "Rajesh & Priya Kulkarni",
+    venue: "Jubilee Hills, Hyderabad",
+    rating: 5,
+  },
+];
+
 export const CustomerView: React.FC = () => {
-  const { openSnapBotWithPackage, setIsSnapBotOpen } = useLeads();
+  const { openSnapBotWithPackage, setIsSnapBotOpen, setIsPackageCustomizerOpen } = useLeads();
+  const [activeLightbox, setActiveLightbox] = useState<PortfolioGalleryItem | null>(null);
 
   const offerings = [
     {
@@ -90,6 +160,25 @@ export const CustomerView: React.FC = () => {
           <strong className="text-[#D4AF37] font-medium"> SnapBot</strong> for an instant verified quote.
         </p>
 
+        {/* Hero Quick Action Buttons */}
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => setIsSnapBotOpen(true)}
+            className="px-6 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-xs sm:text-sm shadow-gold-sm hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <Sparkles className="w-4 h-4 text-black" />
+            <span>Chat with SnapBot AI</span>
+          </button>
+
+          <button
+            onClick={() => setIsPackageCustomizerOpen(true)}
+            className="px-6 py-3 rounded-full bg-[#181822] hover:bg-[#232330] text-gray-200 border border-[#2E2E3E] hover:border-[#D4AF37]/50 font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
+          >
+            <Calculator className="w-4 h-4 text-[#D4AF37]" />
+            <span>Interactive Quote Calculator</span>
+          </button>
+        </div>
+
         {/* Trust Badges */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-gray-400">
           <div className="flex items-center gap-2">
@@ -108,7 +197,7 @@ export const CustomerView: React.FC = () => {
       </section>
 
       {/* Portfolio & Packages Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="text-center mb-10">
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
             Signature Portfolio Offerings
@@ -188,7 +277,7 @@ export const CustomerView: React.FC = () => {
                 </div>
 
                 {/* Action Button */}
-                <div className="mt-6 pt-4 border-t border-[#27272E]/60">
+                <div className="mt-6 pt-4 border-t border-[#27272E]/60 space-y-2">
                   <button
                     onClick={() => openSnapBotWithPackage(pkg.name)}
                     className={`w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-200 flex items-center justify-center gap-2 ${
@@ -207,6 +296,135 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
+      {/* Real Hyderabad Weddings Showcase (Enhancement) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+              <Camera className="w-4 h-4" />
+              <span>Cinematic Visual Portfolio</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+              Real Hyderabad Wedding Stories
+            </h2>
+          </div>
+          <p className="text-xs text-gray-400 max-w-sm">
+            Captured across Falaknuma, Ananthagiri, and Jubilee Hills with cinema lenses and 4K aerial drones.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {GALLERY_SHOWCASE.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setActiveLightbox(item)}
+              className="group cursor-pointer rounded-2xl overflow-hidden bg-[#16161E] border border-[#27272E] hover:border-[#D4AF37]/50 transition-all duration-300"
+            >
+              <div className="relative h-60 overflow-hidden">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute bottom-3 left-4 right-4">
+                  <span className="text-[10px] text-[#D4AF37] font-semibold uppercase tracking-wider block">
+                    {item.location}
+                  </span>
+                  <h3 className="font-serif text-lg font-bold text-white group-hover:text-[#D4AF37] transition-colors">
+                    {item.title}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-4 text-xs text-gray-400">
+                <p className="line-clamp-2">{item.description}</p>
+                <div className="mt-3 pt-2 border-t border-[#23232D] text-[10px] text-gray-500 font-mono">
+                  {item.gear}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="text-center mb-10">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37] block mb-1">
+            Client Stories
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+            Loved by Hyderabad’s Grandest Families
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {TESTIMONIALS.map((t, idx) => (
+            <div
+              key={idx}
+              className="p-6 rounded-2xl glass-card border border-[#27272E] relative flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center gap-1 text-[#D4AF37] mb-3">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-[#D4AF37]" />
+                  ))}
+                </div>
+                <Quote className="w-6 h-6 text-[#D4AF37]/30 mb-2" />
+                <p className="text-xs sm:text-sm text-gray-300 italic leading-relaxed">
+                  "{t.quote}"
+                </p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-[#27272E]">
+                <h4 className="font-serif font-bold text-sm text-white">{t.couple}</h4>
+                <p className="text-[11px] text-gray-400">{t.venue}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Fullscreen Photo Lightbox Modal */}
+      {activeLightbox && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+          <div
+            className="w-full max-w-4xl bg-[#121217] rounded-2xl border border-[#D4AF37]/40 shadow-luxury overflow-hidden text-white relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setActiveLightbox(null)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 text-white hover:text-[#D4AF37]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="relative max-h-[60vh] overflow-hidden">
+              <img
+                src={activeLightbox.image}
+                alt={activeLightbox.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <div className="p-6 space-y-2">
+              <span className="text-xs text-[#D4AF37] font-semibold uppercase tracking-wider">
+                {activeLightbox.location}
+              </span>
+              <h3 className="font-serif text-2xl font-bold text-white">
+                {activeLightbox.title}
+              </h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                {activeLightbox.description}
+              </p>
+              <div className="pt-2 text-xs text-gray-400 font-mono">
+                Production Gear: <span className="text-gray-200">{activeLightbox.gear}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating Action Button (FAB) at bottom-right */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
@@ -217,7 +435,7 @@ export const CustomerView: React.FC = () => {
           <div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-black group-hover:rotate-12 transition-transform" />
           </div>
-          <span className="tracking-wide">Check Availability & Get Quote</span>
+          <span className="tracking-wide">Check Availability &amp; Get Quote</span>
           <span className="flex h-2.5 w-2.5 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-60"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-black"></span>

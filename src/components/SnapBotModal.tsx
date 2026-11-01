@@ -8,6 +8,9 @@ import {
   CheckCircle2,
   RefreshCw,
   ExternalLink,
+  Mic,
+  MicOff,
+  Sparkles,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 import { checkGuardrails, STRICT_GUARDRAIL_RESPONSE, GUARDRAIL_DEMO_PROMPTS } from '../services/guardrails';
@@ -22,7 +25,7 @@ interface ChatMessage {
   isGuardrail?: boolean;
 }
 
-type Step = 'name' | 'phone' | 'event_type' | 'event_date' | 'guest_count' | 'completed';
+type Step = 'name' | 'phone' | 'event_type' | 'event_date' | 'guest_count' | 'addons' | 'completed';
 
 export const SnapBotModal: React.FC = () => {
   const {
@@ -31,7 +34,7 @@ export const SnapBotModal: React.FC = () => {
     preselectedPackage,
     addLead,
     setActiveView,
-    setSelectedLead,
+    showToast,
   } = useLeads();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -39,6 +42,8 @@ export const SnapBotModal: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<Step>('name');
   const [isTyping, setIsTyping] = useState(false);
   const [showGuardrailMenu, setShowGuardrailMenu] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   // Collected Lead data
   const [leadData, setLeadData] = useState<{
@@ -102,6 +107,7 @@ export const SnapBotModal: React.FC = () => {
 
     setCurrentStep('name');
     setCompletedLeadSummary(null);
+    setSelectedAddons([]);
   };
 
   // Initialize bot greeting when modal opens
@@ -115,6 +121,7 @@ export const SnapBotModal: React.FC = () => {
     setMessages([]);
     setCurrentStep('name');
     setCompletedLeadSummary(null);
+    setSelectedAddons([]);
     startConversation();
   };
 
@@ -133,6 +140,58 @@ export const SnapBotModal: React.FC = () => {
         },
       ]);
     }, delayMs);
+  };
+
+  // Speech Recognition (Voice Input)
+  const toggleVoiceInput = () => {
+    const windowWithSpeech = window as unknown as {
+      SpeechRecognition?: new () => any;
+      webkitSpeechRecognition?: new () => any;
+    };
+    const SpeechRec = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition;
+
+    if (!SpeechRec) {
+      showToast('Speech recognition not supported in this browser. Please type your message.', 'warning');
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRec();
+      recognition.lang = 'en-IN';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        showToast('Listening... Speak now 🎙️', 'info');
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(transcript);
+        setIsListening(false);
+        showToast(`Heard: "${transcript}"`, 'success');
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+        showToast('Could not hear clearly. Please try typing.', 'warning');
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.warn('Voice error:', err);
+      setIsListening(false);
+    }
   };
 
   const handleUserSubmit = (textToSend?: string) => {
@@ -220,7 +279,20 @@ export const SnapBotModal: React.FC = () => {
 
     if (currentStep === 'guest_count') {
       const parsedCount = parseInt(input.replace(/[^0-9]/g, ''), 10) || 300;
-      finishLeadCollection(parsedCount);
+      setLeadData((prev) => ({ ...prev, guestCount: parsedCount }));
+      setCurrentStep('addons');
+      addBotMessage(
+        `Do you have any signature add-on preferences like 4K Drone, Extra Royal Album for In-Laws, or Same-Day LED Wall edit? (Select below or say 'None')`
+      );
+      return;
+    }
+
+    if (currentStep === 'addons') {
+      let finalAddons = [...selectedAddons];
+      if (input.toLowerCase() !== 'none' && input.toLowerCase() !== 'skip' && !finalAddons.includes(input)) {
+        finalAddons.push(input);
+      }
+      finishLeadCollection(leadData.guestCount, finalAddons);
       return;
     }
 
@@ -230,7 +302,7 @@ export const SnapBotModal: React.FC = () => {
     );
   };
 
-  const finishLeadCollection = async (guests: number) => {
+  const finishLeadCollection = async (guests: number, addons: string[]) => {
     setCurrentStep('completed');
     setIsTyping(true);
 
@@ -240,15 +312,16 @@ export const SnapBotModal: React.FC = () => {
     const phone = leadData.phone;
 
     // Pricing Rule:
-    // Gold: ₹75,000 for standard events, Platinum: ₹1,50,000 for luxury events
     const isLuxury = eventType === 'Wedding' || guests >= 500;
-    const calculatedQuote = calculateBaseQuote(eventType, isLuxury ? 'Platinum' : 'Gold');
+    const calculatedQuote = calculateBaseQuote(eventType, isLuxury ? 'Platinum' : 'Gold', addons);
     const label = determineLeadLabel(eventType);
+
+    const addonPhrase = addons.length > 0 ? ` Addons requested: ${addons.join(', ')}.` : '';
 
     // 2-line AI generated summary on chat complete
     const chatSummary = `Exclusive ${eventType} celebration for ~${guests} guests on ${date}.\nClient requested ${
       isLuxury ? 'Platinum luxury coverage with 4K cinema & candid team' : 'Gold standard coverage package'
-    }.`;
+    }.${addonPhrase}`;
 
     // WhatsApp draft dynamically in friendly, warm Indian English
     const whatsappDraft = generateWhatsAppPitch({
@@ -257,15 +330,15 @@ export const SnapBotModal: React.FC = () => {
       event_date: date,
       calculated_quote: calculatedQuote,
       chat_summary: chatSummary,
+      selected_addons: addons,
     });
 
-    // 5. Conversational Ending verbatim rule:
+    // Verbatim conversational ending:
     const finalEndingMessage = `Thank you, ${name}! We are checking our camera schedules for ${date}. Our studio will reach out to you shortly.`;
 
-    // Package quote message
-    const quoteMessage = `Based on your ${eventType} details, our recommended package is the ${
-      isLuxury ? 'Platinum Luxury Package at ₹1,50,000' : 'Gold Standard Package at ₹75,000'
-    }.`;
+    const quoteMessage = `Based on your ${eventType} details${addons.length > 0 ? ` and selected upgrades` : ''}, your total investment quote is ${formatINR(
+      calculatedQuote
+    )} (${isLuxury ? 'Platinum Luxury Package' : 'Gold Standard Package'}).`;
 
     setTimeout(async () => {
       setIsTyping(false);
@@ -285,7 +358,6 @@ export const SnapBotModal: React.FC = () => {
         },
       ]);
 
-      // 6. On Chat Complete: Trigger automatic background action that writes lead to database
       try {
         const created = await addLead({
           client_name: name,
@@ -298,6 +370,8 @@ export const SnapBotModal: React.FC = () => {
           status: 'New',
           calculated_quote: calculatedQuote,
           whatsapp_draft: whatsappDraft,
+          selected_addons: addons,
+          notes: 'Captured via SnapBot with Voice & Guardrail validation',
         });
 
         setCompletedLeadSummary({
@@ -316,12 +390,20 @@ export const SnapBotModal: React.FC = () => {
     handleUserSubmit(value);
   };
 
+  const handleToggleAddonChip = (addonName: string) => {
+    if (selectedAddons.includes(addonName)) {
+      setSelectedAddons((prev) => prev.filter((a) => a !== addonName));
+    } else {
+      setSelectedAddons((prev) => [...prev, addonName]);
+    }
+  };
+
   if (!isSnapBotOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-end sm:justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div
-        className="w-full sm:max-w-lg h-[92vh] sm:h-[650px] bg-[#101014] rounded-t-3xl sm:rounded-2xl border border-[#D4AF37]/30 shadow-luxury flex flex-col overflow-hidden text-white relative"
+        className="w-full sm:max-w-lg h-[92vh] sm:h-[680px] bg-[#101014] rounded-t-3xl sm:rounded-2xl border border-[#D4AF37]/30 shadow-luxury flex flex-col overflow-hidden text-white relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}
@@ -341,7 +423,7 @@ export const SnapBotModal: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-gray-400">
-                PixelStory Studios • Zero-Hallucination Verified
+                PixelStory Studios • Voice-Enabled Lead AI
               </p>
             </div>
           </div>
@@ -518,6 +600,41 @@ export const SnapBotModal: React.FC = () => {
           </div>
         )}
 
+        {currentStep === 'addons' && (
+          <div className="px-4 py-2 bg-[#14141C] border-t border-[#27272E] space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {['4K Aerial Drone', 'Royal Album for In-Laws', 'Same-Day LED Reel', '360 Spin Booth'].map((addon) => {
+                const isSelected = selectedAddons.includes(addon);
+                return (
+                  <button
+                    key={addon}
+                    onClick={() => handleToggleAddonChip(addon)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+                      isSelected
+                        ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-semibold'
+                        : 'bg-[#1E1E28] text-gray-300 border-[#333342] hover:border-[#D4AF37]'
+                    }`}
+                  >
+                    {isSelected ? '✓ ' : '+ '}
+                    {addon}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex justify-between items-center pt-1">
+              <span className="text-[10px] text-gray-400">
+                {selectedAddons.length > 0 ? `${selectedAddons.length} upgrades chosen` : 'No upgrades chosen'}
+              </span>
+              <button
+                onClick={() => processStepInput(selectedAddons.length > 0 ? selectedAddons.join(', ') : 'None')}
+                className="px-3 py-1 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-black font-semibold text-xs shadow-gold-sm"
+              >
+                Confirm Upgrades &amp; Get Quote ➔
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Chat Input Bar */}
         <form
           onSubmit={(e) => {
@@ -526,19 +643,35 @@ export const SnapBotModal: React.FC = () => {
           }}
           className="p-3 sm:p-4 bg-[#14141A] border-t border-[#27272E] flex items-center gap-2"
         >
+          {/* Voice Input Mic Button */}
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            title={isListening ? 'Listening... click to stop' : 'Click to speak in English/Hindi'}
+            className={`p-3 rounded-xl border transition-all ${
+              isListening
+                ? 'bg-red-500 text-white animate-pulse border-red-400 shadow-md'
+                : 'bg-[#1B1B24] text-gray-400 hover:text-[#D4AF37] border-[#2C2C38] hover:border-[#D4AF37]/40'
+            }`}
+          >
+            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
+
           <input
             ref={inputRef}
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={
-              currentStep === 'name'
-                ? 'Type your name (e.g. Ananya Reddy)...'
+              isListening
+                ? 'Listening to your voice...'
+                : currentStep === 'name'
+                ? 'Type or speak your name...'
                 : currentStep === 'phone'
-                ? 'Type 10-digit phone (e.g. 98490 12345)...'
+                ? 'Type 10-digit phone...'
                 : currentStep === 'event_date'
                 ? 'Type event date (e.g. 2026-12-14)...'
-                : 'Ask SnapBot a question or enter details...'
+                : 'Ask SnapBot a question or speak...'
             }
             className="flex-1 px-4 py-3 rounded-xl bg-[#0F0F13] border border-[#27272E] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-xs sm:text-sm text-white placeholder-gray-500 transition-colors"
           />

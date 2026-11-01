@@ -19,9 +19,12 @@ interface LeadContextType {
   setSelectedLead: (lead: Lead | null) => void;
   isSnapBotOpen: boolean;
   setIsSnapBotOpen: (open: boolean) => void;
+  isPackageCustomizerOpen: boolean;
+  setIsPackageCustomizerOpen: (open: boolean) => void;
   preselectedPackage: string | null;
   openSnapBotWithPackage: (pkg: string) => void;
   addLead: (payload: NewLeadPayload) => Promise<Lead>;
+  updateLead: (id: string, updates: Partial<Lead>) => Promise<void>;
   updateLeadStatus: (id: string, status: LeadStatus) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   resetMockData: () => void;
@@ -41,6 +44,7 @@ export const LeadProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isSnapBotOpen, setIsSnapBotOpen] = useState<boolean>(false);
+  const [isPackageCustomizerOpen, setIsPackageCustomizerOpen] = useState<boolean>(false);
   const [preselectedPackage, setPreselectedPackage] = useState<string | null>(null);
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
@@ -86,6 +90,17 @@ export const LeadProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return created;
   };
 
+  const updateLead = async (id: string, updates: Partial<Lead>) => {
+    await leadService.updateLead(id, updates);
+    setLeads((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, ...updates } : l))
+    );
+    if (selectedLead && selectedLead.id === id) {
+      setSelectedLead((prev) => (prev ? { ...prev, ...updates } : null));
+    }
+    showToast('Lead details updated', 'info');
+  };
+
   const updateLeadStatus = async (id: string, status: LeadStatus) => {
     await leadService.updateLeadStatus(id, status);
     setLeads((prev) =>
@@ -110,12 +125,12 @@ export const LeadProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const initial = leadService.resetMockData();
     setLeads(initial);
     setSelectedLead(null);
-    showToast('Reset to default 5+ Hyderabad mock leads', 'info');
+    showToast('Reset to default Hyderabad mock leads', 'info');
   };
 
   const refreshLeads = async () => {
     await loadData();
-    showToast('Leads refreshed', 'info');
+    showToast('Leads refreshed from database', 'info');
   };
 
   return (
@@ -131,9 +146,12 @@ export const LeadProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSelectedLead,
         isSnapBotOpen,
         setIsSnapBotOpen,
+        isPackageCustomizerOpen,
+        setIsPackageCustomizerOpen,
         preselectedPackage,
         openSnapBotWithPackage,
         addLead,
+        updateLead,
         updateLeadStatus,
         deleteLead,
         resetMockData,
@@ -156,4 +174,3 @@ export const useLeads = (): LeadContextType => {
   }
   return context;
 };
-

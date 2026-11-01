@@ -10,34 +10,61 @@ import {
   Sparkles,
   ExternalLink,
   Trash2,
+  FileText,
+  Clock,
+  Layers,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
-import { LeadStatus } from '../types/lead';
-import { formatINR } from '../services/leadService';
+import { LeadStatus, WhatsAppTemplateId } from '../types/lead';
+import { formatINR, generateWhatsAppPitch } from '../services/leadService';
 
 export const LeadDrawer: React.FC = () => {
   const {
     selectedLead,
     setSelectedLead,
+    updateLead,
     updateLeadStatus,
     deleteLead,
     showToast,
   } = useLeads();
 
   const [copied, setCopied] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplateId>('initial');
+  const [notesInput, setNotesInput] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+
+  // Sync notes when selected lead changes
+  React.useEffect(() => {
+    if (selectedLead) {
+      setNotesInput(selectedLead.notes || '');
+      setSelectedTemplate('initial');
+    }
+  }, [selectedLead?.id]);
 
   if (!selectedLead) return null;
 
+  // Generate WhatsApp message based on chosen template
+  const activePitchText = generateWhatsAppPitch(
+    {
+      client_name: selectedLead.client_name,
+      event_type: selectedLead.event_type,
+      event_date: selectedLead.event_date,
+      calculated_quote: selectedLead.calculated_quote,
+      chat_summary: selectedLead.chat_summary,
+      selected_addons: selectedLead.selected_addons,
+    },
+    selectedTemplate
+  );
+
   const handleCopyPitch = async () => {
     try {
-      await navigator.clipboard.writeText(selectedLead.whatsapp_draft);
+      await navigator.clipboard.writeText(activePitchText);
       setCopied(true);
       showToast('Copied to Clipboard! ✅', 'success');
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
       const textArea = document.createElement('textarea');
-      textArea.value = selectedLead.whatsapp_draft;
+      textArea.value = activePitchText;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -49,10 +76,22 @@ export const LeadDrawer: React.FC = () => {
   };
 
   const handleOpenWhatsApp = () => {
-    // Strip non-numeric chars for wa.me link
     const cleanDigits = selectedLead.client_phone.replace(/[^0-9]/g, '');
-    const encodedMsg = encodeURIComponent(selectedLead.whatsapp_draft);
+    const encodedMsg = encodeURIComponent(activePitchText);
     window.open(`https://wa.me/${cleanDigits}?text=${encodedMsg}`, '_blank');
+  };
+
+  const handleSaveNotes = async () => {
+    setIsSavingNotes(true);
+    await updateLead(selectedLead.id, { notes: notesInput });
+    setIsSavingNotes(false);
+    showToast('Studio notes saved!', 'success');
+  };
+
+  const handleQuickFollowUp = async (days: number) => {
+    const newDate = new Date(Date.now() + days * 86400 * 1000).toISOString().slice(0, 10);
+    await updateLead(selectedLead.id, { follow_up_date: newDate });
+    showToast(`Follow-up scheduled for ${newDate}`, 'info');
   };
 
   const priorityBadge = (label: string) => {
@@ -142,6 +181,26 @@ export const LeadDrawer: React.FC = () => {
             </div>
           </div>
 
+          {/* Add-ons Display */}
+          {selectedLead.selected_addons && selectedLead.selected_addons.length > 0 && (
+            <div className="p-3.5 rounded-xl bg-[#16161E] border border-[#27272E]">
+              <span className="text-[11px] text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                <Layers className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Requested Add-Ons &amp; Upgrades</span>
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedLead.selected_addons.map((addon, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2.5 py-1 rounded-lg text-xs bg-[#242430] border border-[#3A3A4A] text-gray-200 font-medium"
+                  >
+                    ✨ {addon}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Status Quick Updater */}
           <div className="p-4 rounded-xl bg-[#14141A] border border-[#27272E]">
             <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
@@ -177,7 +236,7 @@ export const LeadDrawer: React.FC = () => {
             </p>
           </div>
 
-          {/* KILLER FEATURE: Ready-to-Copy WhatsApp Pitch Card */}
+          {/* KILLER FEATURE: Ready-to-Copy WhatsApp Pitch with Multi-Template Selector */}
           <div className="p-5 rounded-2xl bg-gradient-to-br from-[#121A14] to-[#0D140E] border-2 border-emerald-500/40 shadow-luxury relative overflow-hidden">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -186,10 +245,10 @@ export const LeadDrawer: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                    Ready-to-Copy WhatsApp Pitch
+                    Smart WhatsApp Pitch Engine
                   </h4>
                   <p className="text-[10px] text-gray-400">
-                    Personalized in friendly Indian English
+                    Choose specialized follow-up cadence
                   </p>
                 </div>
               </div>
@@ -199,9 +258,31 @@ export const LeadDrawer: React.FC = () => {
               </span>
             </div>
 
+            {/* Template Selector Tabs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-3">
+              {[
+                { id: 'initial', label: '📸 Initial Pitch' },
+                { id: 'urgency_hold', label: '⏳ 48h Hold' },
+                { id: 'festival_bonus', label: '🎁 Free Drone' },
+                { id: 'call_confirm', label: '📞 Call Today' },
+              ].map((tpl) => (
+                <button
+                  key={tpl.id}
+                  onClick={() => setSelectedTemplate(tpl.id as WhatsAppTemplateId)}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition-all ${
+                    selectedTemplate === tpl.id
+                      ? 'bg-emerald-500 text-black font-bold shadow-sm'
+                      : 'bg-black/50 text-gray-300 hover:bg-black/80 border border-emerald-500/20'
+                  }`}
+                >
+                  {tpl.label}
+                </button>
+              ))}
+            </div>
+
             {/* The dynamic message content */}
             <div className="p-3.5 rounded-xl bg-black/60 border border-emerald-500/20 text-xs sm:text-sm text-gray-100 font-sans leading-relaxed whitespace-pre-line select-text">
-              {selectedLead.whatsapp_draft}
+              {activePitchText}
             </div>
 
             {/* Action Buttons */}
@@ -235,6 +316,59 @@ export const LeadDrawer: React.FC = () => {
                 <span>Launch WhatsApp</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </button>
+            </div>
+          </div>
+
+          {/* Studio Internal Notes & Follow-up Planner */}
+          <div className="p-4 rounded-xl bg-[#14141B] border border-[#27272E] space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Studio Internal Notes</span>
+              </span>
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSavingNotes}
+                className="px-3 py-1 rounded-lg bg-[#D4AF37] hover:bg-[#E5C048] text-black text-xs font-bold shadow-sm transition-all"
+              >
+                {isSavingNotes ? 'Saving...' : 'Save Note'}
+              </button>
+            </div>
+
+            <textarea
+              rows={2}
+              value={notesInput}
+              onChange={(e) => setNotesInput(e.target.value)}
+              placeholder="e.g. Client requested evening call, budget discussion, father's number..."
+              className="w-full p-2.5 rounded-lg bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] outline-none text-xs text-white placeholder-gray-600 resize-none"
+            />
+
+            {/* Quick Follow-up Date Scheduler */}
+            <div className="pt-2 border-t border-[#23232D] flex items-center justify-between text-xs">
+              <span className="text-gray-400 flex items-center gap-1 text-[11px]">
+                <Clock className="w-3 h-3 text-[#D4AF37]" />
+                <span>Next Follow-up: <strong className="text-white">{selectedLead.follow_up_date || 'Not set'}</strong></span>
+              </span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => handleQuickFollowUp(1)}
+                  className="px-2 py-0.5 rounded bg-[#20202A] hover:bg-[#2B2B38] text-[10px] text-gray-300"
+                >
+                  Tomorrow
+                </button>
+                <button
+                  onClick={() => handleQuickFollowUp(3)}
+                  className="px-2 py-0.5 rounded bg-[#20202A] hover:bg-[#2B2B38] text-[10px] text-gray-300"
+                >
+                  +3 Days
+                </button>
+                <button
+                  onClick={() => handleQuickFollowUp(7)}
+                  className="px-2 py-0.5 rounded bg-[#20202A] hover:bg-[#2B2B38] text-[10px] text-gray-300"
+                >
+                  +1 Week
+                </button>
+              </div>
             </div>
           </div>
 

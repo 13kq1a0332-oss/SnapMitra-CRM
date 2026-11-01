@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { CustomerView } from './components/CustomerView';
 import { AdminDashboard } from './components/AdminDashboard';
 import { SnapBotModal } from './components/SnapBotModal';
+import { PackageCustomizerModal } from './components/PackageCustomizerModal';
 import { ToastContainer } from './components/Toast';
 
 const MainLayout: React.FC = () => {
@@ -20,6 +21,9 @@ const MainLayout: React.FC = () => {
 
       {/* SnapBot Chatbot Dialog / Drawer */}
       <SnapBotModal />
+
+      {/* Interactive Package & Quote Customizer Modal */}
+      <PackageCustomizerModal />
 
       {/* Toast Notification Layer */}
       <ToastContainer />
@@ -38,7 +42,7 @@ const MainLayout: React.FC = () => {
           <div className="flex items-center gap-2 text-gray-400">
             <span>Built with <strong className="text-gray-200">SnapMitra CRM Engine</strong></span>
             <span>•</span>
-            <span className="text-[#D4AF37]">Zero-Hallucination Guardrails Active</span>
+            <span className="text-[#D4AF37]">Zero-Hallucination Guardrails &amp; Voice Active</span>
           </div>
         </div>
       </footer>

@@ -12,9 +12,12 @@ export const INITIAL_MOCK_LEADS: Lead[] = [
     chat_summary: 'Luxury multi-session wedding at Taj Falaknuma Palace.\nNeeds 4K drone cinematography, candid photography, and crane setups.',
     label: 'High-Value',
     status: 'New',
-    calculated_quote: 150000,
+    calculated_quote: 170000,
     whatsapp_draft:
       'Hi Ananya Reddy! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Wedding on 2026-12-14. We have blocked our premium Platinum package equipment for you. Our head photographer is reviewing your luxury multi-session wedding at Taj Falaknuma Palace details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    notes: 'Father requested private evening consultation call. Highly interested in drone cinema.',
+    selected_addons: ['Licensed 4K Drone', 'Heirloom Leather Album'],
+    follow_up_date: new Date(Date.now() + 2 * 86400 * 1000).toISOString().slice(0, 10),
   },
   {
     id: 'e1a3b8c0-82a1-4389-9a2f-111111111102',
@@ -27,9 +30,12 @@ export const INITIAL_MOCK_LEADS: Lead[] = [
     chat_summary: 'Scenic outdoor pre-wedding shoot at Ananthagiri Hills.\nRequests 2 cinematic highlight reels and customized sunset portraiture.',
     label: 'Medium',
     status: 'Contacted',
-    calculated_quote: 75000,
+    calculated_quote: 95000,
     whatsapp_draft:
       'Hi Vikram & Sneha Varma! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Pre-Wedding on 2026-11-28. We have blocked our premium Gold package equipment for you. Our head photographer is reviewing your scenic outdoor pre-wedding shoot details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    notes: 'Sent moodboard via WhatsApp. Couple loves cinematic drone shots.',
+    selected_addons: ['Instagram 4K Reel Teasers'],
+    follow_up_date: new Date(Date.now() + 1 * 86400 * 1000).toISOString().slice(0, 10),
   },
   {
     id: 'e1a3b8c0-82a1-4389-9a2f-111111111103',
@@ -42,9 +48,12 @@ export const INITIAL_MOCK_LEADS: Lead[] = [
     chat_summary: 'Traditional Telugu wedding ceremony in Jubilee Hills.\nClient opted for traditional coverage plus live LED display streaming.',
     label: 'High-Value',
     status: 'Booked',
-    calculated_quote: 150000,
+    calculated_quote: 175000,
     whatsapp_draft:
       'Hi Rajesh Kulkarni! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Wedding on 2026-12-22. We have blocked our premium Platinum package equipment for you. Our head photographer is reviewing your traditional Telugu wedding ceremony details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    notes: 'Booking confirmed. Advance token received: ₹50,000 via UPI.',
+    selected_addons: ['Same-Day LED Projection', 'Live Mandap Stream'],
+    follow_up_date: new Date(Date.now() + 5 * 86400 * 1000).toISOString().slice(0, 10),
   },
   {
     id: 'e1a3b8c0-82a1-4389-9a2f-111111111104',
@@ -57,9 +66,12 @@ export const INITIAL_MOCK_LEADS: Lead[] = [
     chat_summary: 'Grand 50th birthday celebration at Novotel HICC.\nCandid party portraits, stage lighting coverage, and same-day photo booth.',
     label: 'Standard',
     status: 'New',
-    calculated_quote: 50000,
+    calculated_quote: 68000,
     whatsapp_draft:
       'Hi Kavita Rao! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Birthday on 2026-11-20. We have blocked our premium Gold package equipment for you. Our head photographer is reviewing your grand 50th birthday celebration details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    notes: 'Wants custom photobooth with themed backdrop.',
+    selected_addons: ['360 Video Booth'],
+    follow_up_date: new Date(Date.now() + 3 * 86400 * 1000).toISOString().slice(0, 10),
   },
   {
     id: 'e1a3b8c0-82a1-4389-9a2f-111111111105',
@@ -72,9 +84,12 @@ export const INITIAL_MOCK_LEADS: Lead[] = [
     chat_summary: 'Annual tech summit and leadership awards banquet in Gachibowli.\nExecutive headshots, multi-speaker livestreaming, and drone group photo.',
     label: 'Standard',
     status: 'Contacted',
-    calculated_quote: 85000,
+    calculated_quote: 105000,
     whatsapp_draft:
       'Hi Aditya Tech Labs (Sanjay Rao)! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Corporate on 2026-12-05. We have blocked our premium Gold package equipment for you. Our head photographer is reviewing your annual tech summit and leadership awards banquet details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    notes: 'Corporate vendor invoice requested with GST 18%.',
+    selected_addons: ['Executive Headshot Lounge', 'Multi-Speaker Livestream'],
+    follow_up_date: new Date(Date.now() + 4 * 86400 * 1000).toISOString().slice(0, 10),
   },
   {
     id: 'e1a3b8c0-82a1-4389-9a2f-111111111106',
@@ -87,9 +102,11 @@ export const INITIAL_MOCK_LEADS: Lead[] = [
     chat_summary: 'Two-day destination wedding celebration at Ramoji Film City.\nRequested 3 cinematic cameras, wedding teaser within 48h, and 300 photo album.',
     label: 'High-Value',
     status: 'New',
-    calculated_quote: 150000,
+    calculated_quote: 190000,
     whatsapp_draft:
       'Hi Meera & Siddharth Joshi! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Wedding on 2027-01-18. We have blocked our premium Platinum package equipment for you. Our head photographer is reviewing your two-day destination wedding celebration details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    notes: 'High-profile Telugu family wedding. Prefers direct WhatsApp contact with Studio Director.',
+    selected_addons: ['Drone Fleet (2 Drones)', 'Royal Keepsake Box'],
+    follow_up_date: new Date(Date.now() + 2 * 86400 * 1000).toISOString().slice(0, 10),
   },
 ];
-

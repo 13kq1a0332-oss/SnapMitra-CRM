@@ -1,8 +1,8 @@
-import { Lead, NewLeadPayload, LeadStatus, LeadLabel, EventType } from '../types/lead';
+import { Lead, NewLeadPayload, LeadStatus, LeadLabel, EventType, WhatsAppTemplateId } from '../types/lead';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { INITIAL_MOCK_LEADS } from './mockData';
 
-const LOCAL_STORAGE_KEY = 'snapmitra_leads_v1';
+const LOCAL_STORAGE_KEY = 'snapmitra_leads_v2';
 
 export function determineLeadLabel(eventType: EventType): LeadLabel {
   switch (eventType) {
@@ -18,33 +18,68 @@ export function determineLeadLabel(eventType: EventType): LeadLabel {
   }
 }
 
-export function calculateBaseQuote(eventType: EventType, packageTier: 'Gold' | 'Platinum' | 'Standard' = 'Gold'): number {
+export function calculateBaseQuote(
+  eventType: EventType,
+  packageTier: 'Gold' | 'Platinum' | 'Standard' = 'Gold',
+  addons: string[] = []
+): number {
+  let base = 75000;
   if (eventType === 'Wedding') {
-    return packageTier === 'Platinum' ? 150000 : 75000;
+    base = packageTier === 'Platinum' ? 150000 : 75000;
+  } else if (eventType === 'Pre-Wedding') {
+    base = 75000;
+  } else if (eventType === 'Corporate') {
+    base = 85000;
+  } else if (eventType === 'Birthday') {
+    base = 50000;
+  } else {
+    base = 45000;
   }
-  if (eventType === 'Pre-Wedding') {
-    return 75000;
-  }
-  if (eventType === 'Corporate') {
-    return 85000;
-  }
-  if (eventType === 'Birthday') {
-    return 50000;
-  }
-  return 45000;
+
+  // Add-on pricing
+  const addonCost = addons.reduce((sum, item) => {
+    if (item.includes('Drone')) return sum + 20000;
+    if (item.includes('Album')) return sum + 15000;
+    if (item.includes('LED') || item.includes('Projection')) return sum + 25000;
+    if (item.includes('360')) return sum + 18000;
+    if (item.includes('Reel')) return sum + 12000;
+    return sum + 10000;
+  }, 0);
+
+  return base + addonCost;
 }
 
-export function generateWhatsAppPitch(lead: {
-  client_name: string;
-  event_type: string;
-  event_date: string;
-  calculated_quote: number;
-  chat_summary?: string;
-}): string {
+export function generateWhatsAppPitch(
+  lead: {
+    client_name: string;
+    event_type: string;
+    event_date: string;
+    calculated_quote: number;
+    chat_summary?: string;
+    selected_addons?: string[];
+  },
+  template: WhatsAppTemplateId = 'initial'
+): string {
   const packageType = lead.calculated_quote >= 150000 ? 'Platinum' : 'Gold';
   const summaryText = lead.chat_summary ? lead.chat_summary.replace(/\n/g, ' ') : 'event requirements';
+  const addonText = lead.selected_addons && lead.selected_addons.length > 0
+    ? `including your requested add-ons (${lead.selected_addons.join(', ')})`
+    : '';
 
-  return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming ${lead.event_type} on ${lead.event_date}. We have blocked our premium ${packageType} package equipment for you. Our head photographer is reviewing your ${summaryText} and will give you a quick call shortly. Looking forward to capturing your beautiful memories!`;
+  switch (template) {
+    case 'urgency_hold':
+      return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 Regarding your ${lead.event_type} on ${lead.event_date}: this is a peak auspicious Muhurtham date and we have received 2 other inquiries. We have placed a temporary 48-Hour Priority Hold on our ${packageType} cinema team for you. Let us know if you would like a quick 5-minute video call today to secure your date!`;
+
+    case 'festival_bonus':
+      return `Namaste ${lead.client_name}! ✨ PixelStory Studios Hyderabad here. We loved reviewing your ${lead.event_type} vision for ${lead.event_date}. If you confirm your ${packageType} Package reservation this week, we are happy to bundle complimentary 4K Aerial Drone Coverage worth ₹20,000 for your main ceremony. Let's create magic together!`;
+
+    case 'call_confirm':
+      return `Hi ${lead.client_name}! PixelStory Studios Hyderabad. 📞 Our Lead Photographer Vikram is scheduled to give you a brief call this evening to discuss your camera setups, venue lighting, and wedding film style for ${lead.event_date}. Looking forward to speaking with you!`;
+
+    case 'initial':
+    default:
+      return `Hi ${lead.client_name}! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming ${lead.event_type} on ${lead.event_date}. We have blocked our premium ${packageType} package equipment for you ${addonText}. Our head photographer is reviewing your ${summaryText} and will give you a quick call shortly. Looking forward to capturing your beautiful memories!`;
+  }
 }
 
 export function formatINR(amount: number): string {
@@ -93,13 +128,12 @@ export const leadService = {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          // Sync locally as cache
           setLocalLeads(data as Lead[]);
           return data as Lead[];
         }
-        console.warn('Supabase fetch failed or empty, falling back to local storage', error);
+        console.warn('Supabase fetch fallback to local storage', error);
       } catch (err) {
-        console.warn('Supabase connection error, using local storage', err);
+        console.warn('Supabase fetch exception', err);
       }
     }
     return getLocalLeads();
@@ -119,6 +153,9 @@ export const leadService = {
       status: payload.status || 'New',
       calculated_quote: payload.calculated_quote,
       whatsapp_draft: payload.whatsapp_draft || generateWhatsAppPitch(payload),
+      notes: payload.notes || '',
+      selected_addons: payload.selected_addons || [],
+      follow_up_date: payload.follow_up_date || new Date(Date.now() + 2 * 86400 * 1000).toISOString().slice(0, 10),
     };
 
     if (isSupabaseConfigured && supabase) {
@@ -141,20 +178,24 @@ export const leadService = {
     return newLead;
   },
 
-  async updateLeadStatus(id: string, status: LeadStatus): Promise<boolean> {
+  async updateLead(id: string, updates: Partial<Lead>): Promise<boolean> {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error } = await supabase.from('leads').update({ status }).eq('id', id);
-        if (error) console.warn('Supabase update status failed', error);
+        const { error } = await supabase.from('leads').update(updates).eq('id', id);
+        if (error) console.warn('Supabase update failed', error);
       } catch (err) {
-        console.warn('Supabase update status error', err);
+        console.warn('Supabase update error', err);
       }
     }
 
     const current = getLocalLeads();
-    const updated = current.map((lead) => (lead.id === id ? { ...lead, status } : lead));
+    const updated = current.map((lead) => (lead.id === id ? { ...lead, ...updates } : lead));
     setLocalLeads(updated);
     return true;
+  },
+
+  async updateLeadStatus(id: string, status: LeadStatus): Promise<boolean> {
+    return this.updateLead(id, { status });
   },
 
   async deleteLead(id: string): Promise<boolean> {
@@ -178,4 +219,3 @@ export const leadService = {
     return INITIAL_MOCK_LEADS;
   },
 };
-

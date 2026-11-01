@@ -10,10 +10,14 @@ import {
   MessageSquare,
   Download,
   Calendar,
+  Layers,
+  Calculator,
+  X,
+  CheckCircle2,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
-import { LeadLabel, LeadStatus } from '../types/lead';
-import { formatINR } from '../services/leadService';
+import { LeadLabel, LeadStatus, EventType, NewLeadPayload } from '../types/lead';
+import { formatINR, calculateBaseQuote, generateWhatsAppPitch, determineLeadLabel } from '../services/leadService';
 import { LeadDrawer } from './LeadDrawer';
 
 export const AdminDashboard: React.FC = () => {
@@ -25,23 +29,39 @@ export const AdminDashboard: React.FC = () => {
     refreshLeads,
     showToast,
     setIsSnapBotOpen,
+    setIsPackageCustomizerOpen,
+    addLead,
   } = useLeads();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('All');
   const [selectedLabel, setSelectedLabel] = useState<string>('All');
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
-  // Stats Row calculations (as specified in Phase 4 prompt):
-  // 1. "Total Inquiries" (Count of total rows in leads table)
+  // Manual Lead Form state
+  const [manualForm, setManualForm] = useState({
+    client_name: '',
+    client_phone: '',
+    event_type: 'Wedding' as EventType,
+    event_date: '',
+    guest_count: 500,
+    quote: 150000,
+    notes: '',
+  });
+
+  // Stats calculations:
   const totalInquiries = leads.length;
-
-  // 2. "Premium Weddings Booked" (Count of leads with 'High-Value' label)
   const premiumWeddings = leads.filter((l) => l.label === 'High-Value').length;
-
-  // 3. "Quote Pipeline Value" (Sum of calculated_quotes for all 'New' and 'Contacted' status leads)
   const quotePipelineValue = leads
     .filter((l) => l.status === 'New' || l.status === 'Contacted')
     .reduce((sum, l) => sum + (Number(l.calculated_quote) || 0), 0);
+
+  // Pipeline counts
+  const newCount = leads.filter((l) => l.status === 'New').length;
+  const contactedCount = leads.filter((l) => l.status === 'Contacted').length;
+  const bookedCount = leads.filter((l) => l.status === 'Booked').length;
+  const archivedCount = leads.filter((l) => l.status === 'Archived').length;
+  const conversionRate = totalInquiries > 0 ? Math.round((bookedCount / totalInquiries) * 100) : 0;
 
   // Filtered Leads
   const filteredLeads = useMemo(() => {
@@ -64,14 +84,11 @@ export const AdminDashboard: React.FC = () => {
   const priorityBadgeStyle = (label: LeadLabel) => {
     switch (label) {
       case 'High-Value':
-        // Red for 'High-Value'
         return 'bg-red-500/15 text-red-400 border border-red-500/50 shadow-sm';
       case 'Medium':
-        // Yellow for 'Medium'
         return 'bg-amber-500/15 text-amber-300 border border-amber-500/50 shadow-sm';
       case 'Standard':
       default:
-        // Blue for 'Standard'
         return 'bg-sky-500/15 text-sky-300 border border-sky-500/50 shadow-sm';
     }
   };
@@ -92,7 +109,7 @@ export const AdminDashboard: React.FC = () => {
 
   const exportCSV = () => {
     if (leads.length === 0) return;
-    const headers = ['Client Name', 'Phone', 'Event Type', 'Event Date', 'Guests', 'Label', 'Status', 'Quote (INR)'];
+    const headers = ['Client Name', 'Phone', 'Event Type', 'Event Date', 'Guests', 'Label', 'Status', 'Quote (INR)', 'Notes'];
     const rows = leads.map((l) => [
       `"${l.client_name}"`,
       `"${l.client_phone}"`,
@@ -102,6 +119,7 @@ export const AdminDashboard: React.FC = () => {
       `"${l.label}"`,
       `"${l.status}"`,
       l.calculated_quote,
+      `"${(l.notes || '').replace(/"/g, '""')}"`,
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
@@ -113,6 +131,50 @@ export const AdminDashboard: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     showToast('Exported leads to CSV!', 'success');
+  };
+
+  const handleManualLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualForm.client_name || !manualForm.client_phone || !manualForm.event_date) {
+      showToast('Please fill in client name, phone and date', 'warning');
+      return;
+    }
+
+    const calculated = manualForm.quote || calculateBaseQuote(manualForm.event_type, 'Gold');
+    const label = determineLeadLabel(manualForm.event_type);
+    const summary = `Manual walk-in inquiry for ${manualForm.event_type} (${manualForm.guest_count} guests) on ${manualForm.event_date}.\nNotes: ${manualForm.notes || 'None'}`;
+    const draft = generateWhatsAppPitch({
+      client_name: manualForm.client_name,
+      event_type: manualForm.event_type,
+      event_date: manualForm.event_date,
+      calculated_quote: calculated,
+      chat_summary: summary,
+    });
+
+    await addLead({
+      client_name: manualForm.client_name,
+      client_phone: manualForm.client_phone,
+      event_type: manualForm.event_type,
+      event_date: manualForm.event_date,
+      guest_count: manualForm.guest_count,
+      chat_summary: summary,
+      label,
+      status: 'New',
+      calculated_quote: calculated,
+      whatsapp_draft: draft,
+      notes: manualForm.notes,
+    });
+
+    setIsManualModalOpen(false);
+    setManualForm({
+      client_name: '',
+      client_phone: '',
+      event_type: 'Wedding',
+      event_date: '',
+      guest_count: 500,
+      quote: 150000,
+      notes: '',
+    });
   };
 
   return (
@@ -130,18 +192,26 @@ export const AdminDashboard: React.FC = () => {
               </span>
             </div>
             <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Executive Leads & WhatsApp Automation Engine
+              Executive Leads &amp; WhatsApp Automation Engine
             </h1>
           </div>
 
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
-              onClick={() => setIsSnapBotOpen(true)}
+              onClick={() => setIsManualModalOpen(true)}
               className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-black font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-gold-sm hover:brightness-110 active:scale-95 transition-all"
             >
               <Plus className="w-4 h-4 text-black" />
-              <span>Simulate New Lead</span>
+              <span>Add Walk-in Lead</span>
+            </button>
+
+            <button
+              onClick={() => setIsPackageCustomizerOpen(true)}
+              className="px-3 py-2 rounded-xl bg-[#171720] hover:bg-[#20202C] border border-[#2B2B38] text-gray-300 text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
+            >
+              <Calculator className="w-4 h-4 text-[#D4AF37]" />
+              <span>Quote Calculator</span>
             </button>
 
             <button
@@ -166,7 +236,7 @@ export const AdminDashboard: React.FC = () => {
               title="Reset to 5+ realistic Hyderabad leads"
               className="px-3 py-2 rounded-xl bg-[#171720] hover:bg-[#20202C] border border-[#2B2B38] text-gray-300 text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
             >
-              <span>Reset Mock Data</span>
+              <span>Reset Data</span>
             </button>
           </div>
         </div>
@@ -174,7 +244,7 @@ export const AdminDashboard: React.FC = () => {
         {/* ============================================================ */}
         {/* STATS ROW (Metric Cards Required in Phase 4)                */}
         {/* ============================================================ */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
           {/* Card 1: Total Inquiries */}
           <div className="p-5 rounded-2xl glass-panel border border-[#27272E] hover:border-[#D4AF37]/40 transition-all shadow-luxury relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
@@ -230,6 +300,47 @@ export const AdminDashboard: React.FC = () => {
             <p className="text-[11px] text-gray-400">
               Sum for all <span className="text-emerald-400 font-medium">'New'</span> &amp; <span className="text-purple-400 font-medium">'Contacted'</span> leads
             </p>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* PIPELINE STAGES VISUAL PROGRESS BAR (ENHANCEMENT)           */}
+        {/* ============================================================ */}
+        <div className="p-4 rounded-2xl glass-panel border border-[#27272E] mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-white">
+                Studio Sales Pipeline
+              </span>
+              <span className="text-[11px] text-gray-400 block">
+                Booking Conversion Rate: <strong className="text-emerald-400">{conversionRate}%</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* Stages Breakdown Chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>New: <strong>{newCount}</strong></span>
+            </div>
+
+            <div className="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+              <span>Contacted: <strong>{contactedCount}</strong></span>
+            </div>
+
+            <div className="px-3 py-1.5 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span>
+              <span>Booked: <strong>{bookedCount}</strong></span>
+            </div>
+
+            <div className="px-3 py-1.5 rounded-xl bg-gray-800 border border-gray-700 text-gray-400 text-xs font-medium">
+              <span>Archived: <strong>{archivedCount}</strong></span>
+            </div>
           </div>
         </div>
 
@@ -400,6 +511,122 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Manual Walk-In Lead Modal */}
+      {isManualModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div
+            className="w-full max-w-md bg-[#13131A] rounded-2xl border border-[#D4AF37]/30 shadow-luxury p-6 text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-serif text-xl font-bold text-white">Add Walk-in / Phone Lead</h3>
+              <button
+                onClick={() => setIsManualModalOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleManualLeadSubmit} className="space-y-3.5">
+              <div>
+                <label className="block text-xs text-gray-300 font-semibold mb-1">Client Name</label>
+                <input
+                  type="text"
+                  required
+                  value={manualForm.client_name}
+                  onChange={(e) => setManualForm({ ...manualForm, client_name: e.target.value })}
+                  placeholder="e.g. Rohith Varma"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-300 font-semibold mb-1">Hyderabad Mobile Phone</label>
+                <input
+                  type="text"
+                  required
+                  value={manualForm.client_phone}
+                  onChange={(e) => setManualForm({ ...manualForm, client_phone: e.target.value })}
+                  placeholder="+91 98490 12345"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-gray-300 font-semibold mb-1">Event Type</label>
+                  <select
+                    value={manualForm.event_type}
+                    onChange={(e) => setManualForm({ ...manualForm, event_type: e.target.value as EventType })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white"
+                  >
+                    <option value="Wedding">Wedding</option>
+                    <option value="Pre-Wedding">Pre-Wedding</option>
+                    <option value="Birthday">Birthday</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-300 font-semibold mb-1">Event Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={manualForm.event_date}
+                    onChange={(e) => setManualForm({ ...manualForm, event_date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-gray-300 font-semibold mb-1">Guest Count</label>
+                  <input
+                    type="number"
+                    value={manualForm.guest_count}
+                    onChange={(e) => setManualForm({ ...manualForm, guest_count: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-300 font-semibold mb-1">Quote (₹ INR)</label>
+                  <input
+                    type="number"
+                    value={manualForm.quote}
+                    onChange={(e) => setManualForm({ ...manualForm, quote: Number(e.target.value) })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-gray-300 font-semibold mb-1">Internal Notes</label>
+                <textarea
+                  rows={2}
+                  value={manualForm.notes}
+                  onChange={(e) => setManualForm({ ...manualForm, notes: e.target.value })}
+                  placeholder="Notes from call / walk-in..."
+                  className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white resize-none"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-black font-semibold text-xs shadow-gold-sm hover:brightness-110 active:scale-95 transition-all"
+                >
+                  Create &amp; Log Lead
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Slide-out Lead Details Drawer */}
       <LeadDrawer />

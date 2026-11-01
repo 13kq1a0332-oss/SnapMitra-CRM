@@ -17,6 +17,9 @@ export interface Lead {
   status: LeadStatus;
   calculated_quote: number;
   whatsapp_draft: string;
+  notes?: string;
+  selected_addons?: string[];
+  follow_up_date?: string;
 }
 
 export type NewLeadPayload = Omit<Lead, 'id' | 'created_at'> & {
@@ -24,3 +27,11 @@ export type NewLeadPayload = Omit<Lead, 'id' | 'created_at'> & {
   created_at?: string;
 };
 
+export type WhatsAppTemplateId = 'initial' | 'urgency_hold' | 'festival_bonus' | 'call_confirm';
+
+export interface WhatsAppTemplate {
+  id: WhatsAppTemplateId;
+  title: string;
+  badge: string;
+  generate: (lead: Lead) => string;
+}
