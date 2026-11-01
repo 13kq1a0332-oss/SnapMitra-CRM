@@ -1,17 +1,18 @@
 -- ===================================================================
--- SnapMitra CRM - Supabase / PostgreSQL Schema Migration (v2 Enhanced)
+-- SnapMitra CRM - Supabase / PostgreSQL Schema Migration (v3 Enhanced)
 -- Designed for PixelStory Studios (Hyderabad)
 -- ===================================================================
 
 -- 1. Enable UUID Extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. Create 'leads' Table (with Enhanced Fields)
+-- 2. Create 'leads' Table (with Enhanced Fields & Email Support)
 CREATE TABLE IF NOT EXISTS leads (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     client_name TEXT NOT NULL,
     client_phone TEXT NOT NULL,
+    client_email TEXT DEFAULT '',
     event_type TEXT NOT NULL CHECK (event_type IN ('Wedding', 'Pre-Wedding', 'Birthday', 'Corporate', 'Other')),
     event_date DATE NOT NULL,
     guest_count INTEGER DEFAULT 0,
@@ -28,6 +29,9 @@ CREATE TABLE IF NOT EXISTS leads (
 -- 3. Seamless Migration Alter statements (in case table was already created)
 DO $$
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'client_email') THEN
+        ALTER TABLE leads ADD COLUMN client_email TEXT DEFAULT '';
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'leads' AND column_name = 'notes') THEN
         ALTER TABLE leads ADD COLUMN notes TEXT DEFAULT '';
     END IF;
@@ -46,11 +50,11 @@ CREATE INDEX IF NOT EXISTS idx_leads_label ON leads(label);
 CREATE INDEX IF NOT EXISTS idx_leads_event_date ON leads(event_date);
 CREATE INDEX IF NOT EXISTS idx_leads_event_type ON leads(event_type);
 CREATE INDEX IF NOT EXISTS idx_leads_follow_up ON leads(follow_up_date);
+CREATE INDEX IF NOT EXISTS idx_leads_client_email ON leads(client_email);
 
 -- 5. Enable Row Level Security (RLS)
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 
--- Permissive policy for demo / lead submission & admin viewing
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -64,9 +68,9 @@ BEGIN
     END IF;
 END $$;
 
--- 6. Seed Mock Data (Hyderabad context with realistic leads & add-ons)
+-- 6. Seed Mock Data (Hyderabad context with realistic leads, emails & add-ons)
 INSERT INTO leads (
-    id, created_at, client_name, client_phone, event_type, event_date, 
+    id, created_at, client_name, client_phone, client_email, event_type, event_date, 
     guest_count, chat_summary, label, status, calculated_quote, whatsapp_draft,
     notes, selected_addons, follow_up_date
 ) VALUES
@@ -75,6 +79,7 @@ INSERT INTO leads (
     NOW() - INTERVAL '2 hours',
     'Ananya Reddy',
     '+91 98490 23145',
+    'ananya.reddy@gmail.com',
     'Wedding',
     '2026-12-14',
     850,
@@ -92,6 +97,7 @@ INSERT INTO leads (
     NOW() - INTERVAL '5 hours',
     'Vikram & Sneha Varma',
     '+91 98850 78219',
+    'vikram.varma@outlook.com',
     'Pre-Wedding',
     '2026-11-28',
     50,
@@ -109,6 +115,7 @@ INSERT INTO leads (
     NOW() - INTERVAL '14 hours',
     'Rajesh Kulkarni',
     '+91 99480 34102',
+    'rajesh.kulkarni@yahoo.com',
     'Wedding',
     '2026-12-22',
     600,
@@ -124,38 +131,23 @@ INSERT INTO leads (
 (
     'e1a3b8c0-82a1-4389-9a2f-111111111104',
     NOW() - INTERVAL '24 hours',
-    'Kavita Rao',
-    '+91 97012 45890',
+    'Sireesha',
+    '+91 84979 80957',
+    'srikanthmallavarapu2@gmail.com',
     'Birthday',
-    '2026-11-20',
-    120,
-    'Grand 50th birthday celebration at Novotel HICC. Candid party portraits, stage lighting coverage, and same-day photo booth.',
+    '2026-12-01',
+    100,
+    'Exclusive birthday celebration for ~100 guests on 2026-12-01.\nClient requested Gold standard coverage package.',
     'Standard',
     'New',
-    68000,
-    'Hi Kavita Rao! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Birthday on 2026-11-20. We have blocked our premium Gold package equipment for you. Our head photographer is reviewing your grand 50th birthday celebration details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
-    'Wants custom photobooth with themed backdrop.',
-    ARRAY['360 Video Booth'],
+    70000,
+    'Hi Sireesha! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Birthday on 2026-12-01. We have blocked our premium Gold package equipment for you. Our head photographer is reviewing your celebration details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
+    'Client provided email for quotation delivery.',
+    ARRAY['Instagram 4K Reel Teasers'],
     CURRENT_DATE + INTERVAL '3 days'
-),
-(
-    'e1a3b8c0-82a1-4389-9a2f-111111111105',
-    NOW() - INTERVAL '48 hours',
-    'Aditya Tech Labs (Sanjay Rao)',
-    '+91 98661 11492',
-    'Corporate',
-    '2026-12-05',
-    350,
-    'Annual tech summit and leadership awards banquet in Gachibowli. Executive headshots, multi-speaker livestreaming, and drone group photo.',
-    'Standard',
-    'Contacted',
-    105000,
-    'Hi Aditya Tech Labs (Sanjay Rao)! This is PixelStory Studios Hyderabad. 📸 We are excited to shoot your upcoming Corporate on 2026-12-05. We have blocked our premium Gold package equipment for you. Our head photographer is reviewing your annual tech summit and leadership awards banquet details and will give you a quick call shortly. Looking forward to capturing your beautiful memories!',
-    'Corporate vendor invoice requested with GST 18%.',
-    ARRAY['Executive Headshot Lounge', 'Multi-Speaker Livestream'],
-    CURRENT_DATE + INTERVAL '4 days'
 )
 ON CONFLICT (id) DO UPDATE SET
+    client_email = EXCLUDED.client_email,
     notes = EXCLUDED.notes,
     selected_addons = EXCLUDED.selected_addons,
     follow_up_date = EXCLUDED.follow_up_date;

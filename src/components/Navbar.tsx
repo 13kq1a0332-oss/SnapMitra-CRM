@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, ShieldCheck, Sparkles, LogOut, Database, UserCheck, Smartphone } from 'lucide-react';
+import { Camera, ShieldCheck, Sparkles, LogOut, Database, UserCheck, Smartphone, Phone, Mail, MessageCircle } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 import { AdminLoginModal } from './AdminLoginModal';
 import { QRCodeModal } from './QRCodeModal';
@@ -16,6 +16,11 @@ export const Navbar: React.FC = () => {
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+  const ownerPhone = '8497980957';
+  const ownerWhatsAppUrl = `https://wa.me/91${ownerPhone}?text=${encodeURIComponent('Hi PixelStory Studios, I would like to inquire about wedding/event photography packages.')}`;
+  const ownerEmail = 'Srikanthmallavarapu14@gmail.com';
+  const ownerMailtoUrl = `mailto:${ownerEmail}?subject=${encodeURIComponent('PixelStory Studios Photography Inquiry')}`;
 
   const handleAdminToggle = () => {
     if (activeView === 'admin') {
@@ -37,7 +42,51 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#0B0B0C]/85 border-b border-[#27272E] transition-all print:hidden">
+      {/* Top Owner Direct Contact Banner */}
+      <div className="bg-gradient-to-r from-[#171720] via-[#121217] to-[#171720] border-b border-[#24242E] py-2 px-4 sm:px-6 text-xs text-gray-300 print:hidden">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-[11px] text-gray-400">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-gray-300">Studio Director Direct Line:</span>
+            <span className="text-[#D4AF37] font-medium hidden md:inline">Jubilee Hills, Hyderabad</span>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-medium">
+            {/* Direct WhatsApp Call Button */}
+            <a
+              href={ownerWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-gray-200 hover:text-[#25D366] transition-colors group"
+              title="Click to Chat on WhatsApp"
+            >
+              <div className="w-5 h-5 rounded-full bg-[#25D366]/20 flex items-center justify-center text-[#25D366]">
+                <MessageCircle className="w-3 h-3" />
+              </div>
+              <span className="group-hover:underline font-mono">+91 {ownerPhone}</span>
+            </a>
+
+            <span className="text-gray-600">|</span>
+
+            {/* Direct Email Link */}
+            <a
+              href={ownerMailtoUrl}
+              className="inline-flex items-center gap-1.5 text-gray-200 hover:text-[#D4AF37] transition-colors group"
+              title="Click to Email Studio Owner"
+            >
+              <div className="w-5 h-5 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                <Mail className="w-3 h-3" />
+              </div>
+              <span className="group-hover:underline lowercase font-mono">{ownerEmail}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-[#0B0B0C]/90 border-b border-[#27272E] transition-all print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Brand Logo & Title */}
           <div 

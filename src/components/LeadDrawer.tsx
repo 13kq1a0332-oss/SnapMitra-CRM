@@ -6,6 +6,7 @@ import {
   Send,
   Calendar,
   Phone,
+  Mail,
   Users,
   Sparkles,
   ExternalLink,
@@ -46,6 +47,11 @@ export const LeadDrawer: React.FC = () => {
 
   if (!selectedLead) return null;
 
+  const cleanPhone = selectedLead.client_phone && !selectedLead.client_phone.includes('@') && selectedLead.client_phone !== 'Provided via Email'
+    ? selectedLead.client_phone
+    : null;
+  const cleanEmail = selectedLead.client_email || (selectedLead.client_phone && selectedLead.client_phone.includes('@') ? selectedLead.client_phone.replace(/^\+91\s*/, '') : null);
+
   // Generate WhatsApp message based on chosen template
   const activePitchText = generateWhatsAppPitch(
     {
@@ -79,9 +85,16 @@ export const LeadDrawer: React.FC = () => {
   };
 
   const handleOpenWhatsApp = () => {
-    const cleanDigits = selectedLead.client_phone.replace(/[^0-9]/g, '');
+    const rawDigits = cleanPhone ? cleanPhone.replace(/[^0-9]/g, '') : '918497980957';
     const encodedMsg = encodeURIComponent(activePitchText);
-    window.open(`https://wa.me/${cleanDigits}?text=${encodedMsg}`, '_blank');
+    window.open(`https://wa.me/${rawDigits}?text=${encodedMsg}`, '_blank');
+  };
+
+  const handleOpenMailto = () => {
+    if (!cleanEmail) return;
+    const subject = encodeURIComponent(`PixelStory Studios — Photography Proposal for ${selectedLead.client_name}`);
+    const body = encodeURIComponent(activePitchText);
+    window.open(`mailto:${cleanEmail}?subject=${subject}&body=${body}`, '_blank');
   };
 
   const handleSaveNotes = async () => {
@@ -147,10 +160,20 @@ export const LeadDrawer: React.FC = () => {
               <div className="p-3.5 rounded-xl bg-[#16161E] border border-[#27272E]">
                 <span className="text-[11px] text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
                   <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Client Phone</span>
+                  <span>Phone Number</span>
                 </span>
                 <span className="font-mono text-sm font-semibold text-gray-100">
-                  {selectedLead.client_phone}
+                  {cleanPhone || 'None Provided'}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[#16161E] border border-[#27272E]">
+                <span className="text-[11px] text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                  <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Client Email</span>
+                </span>
+                <span className="font-mono text-xs font-semibold text-gray-100 truncate block">
+                  {cleanEmail || 'None Provided'}
                 </span>
               </div>
 
@@ -173,26 +196,28 @@ export const LeadDrawer: React.FC = () => {
                   ~{selectedLead.guest_count} Attendees
                 </span>
               </div>
+            </div>
 
-              <div className="p-3.5 rounded-xl bg-[#16161E] border border-[#27272E]">
+            {/* Calculated Quote Display & PDF Button */}
+            <div className="p-4 rounded-xl bg-[#16161E] border border-[#27272E] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
                 <span className="text-[11px] text-gray-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
                   <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Calculated Quote</span>
+                  <span>Calculated Package Quote</span>
                 </span>
-                <span className="font-serif text-lg font-bold text-[#D4AF37]">
+                <span className="font-serif text-2xl font-bold text-[#D4AF37]">
                   {formatINR(selectedLead.calculated_quote)}
                 </span>
               </div>
-            </div>
 
-            {/* Quick Formal PDF Quotation Trigger */}
-            <button
-              onClick={() => setIsQuoteModalOpen(true)}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#191924] hover:bg-[#222232] border border-[#D4AF37]/40 hover:border-[#D4AF37] text-xs font-semibold text-[#D4AF37] flex items-center justify-center gap-2 transition-all shadow-sm"
-            >
-              <Printer className="w-4 h-4 text-[#D4AF37]" />
-              <span>Generate Official Studio PDF Quotation</span>
-            </button>
+              <button
+                onClick={() => setIsQuoteModalOpen(true)}
+                className="py-2 px-3.5 rounded-xl bg-[#222230] hover:bg-[#D4AF37] hover:text-black border border-[#D4AF37]/50 text-xs font-semibold text-[#D4AF37] flex items-center gap-1.5 transition-all shadow-sm"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Official PDF Quote</span>
+              </button>
+            </div>
 
             {/* Add-ons Display */}
             {selectedLead.selected_addons && selectedLead.selected_addons.length > 0 && (
@@ -249,7 +274,7 @@ export const LeadDrawer: React.FC = () => {
               </p>
             </div>
 
-            {/* KILLER FEATURE: Ready-to-Copy WhatsApp Pitch with Multi-Template Selector */}
+            {/* Ready-to-Copy WhatsApp Pitch with Multi-Template Selector */}
             <div className="p-5 rounded-2xl bg-gradient-to-br from-[#121A14] to-[#0D140E] border-2 border-emerald-500/40 shadow-luxury relative overflow-hidden">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -258,7 +283,7 @@ export const LeadDrawer: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                      Smart WhatsApp Pitch Engine
+                      Smart WhatsApp &amp; Email Pitch Engine
                     </h4>
                     <p className="text-[10px] text-gray-400">
                       Choose specialized follow-up cadence
@@ -293,13 +318,13 @@ export const LeadDrawer: React.FC = () => {
                 ))}
               </div>
 
-              {/* The dynamic message content */}
+              {/* Message content */}
               <div className="p-3.5 rounded-xl bg-black/60 border border-emerald-500/20 text-xs sm:text-sm text-gray-100 font-sans leading-relaxed whitespace-pre-line select-text">
                 {activePitchText}
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 flex items-center gap-3">
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <button
                   onClick={handleCopyPitch}
                   className={`flex-1 py-3 px-4 rounded-xl font-semibold text-xs tracking-wide transition-all flex items-center justify-center gap-2 shadow-md ${
@@ -329,6 +354,17 @@ export const LeadDrawer: React.FC = () => {
                   <span>Launch WhatsApp</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </button>
+
+                {cleanEmail && (
+                  <button
+                    onClick={handleOpenMailto}
+                    title="Send proposal via Email"
+                    className="py-3 px-4 rounded-xl bg-[#1E1E28] hover:bg-[#292938] border border-gray-600 text-white font-medium text-xs tracking-wide transition-all flex items-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>Send Email</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -356,7 +392,6 @@ export const LeadDrawer: React.FC = () => {
                 className="w-full p-2.5 rounded-lg bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] outline-none text-xs text-white placeholder-gray-600 resize-none"
               />
 
-              {/* Quick Follow-up Date Scheduler */}
               <div className="pt-2 border-t border-[#23232D] flex items-center justify-between text-xs">
                 <span className="text-gray-400 flex items-center gap-1 text-[11px]">
                   <Clock className="w-3 h-3 text-[#D4AF37]" />

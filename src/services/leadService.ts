@@ -2,7 +2,7 @@ import { Lead, NewLeadPayload, LeadStatus, LeadLabel, EventType, WhatsAppTemplat
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { INITIAL_MOCK_LEADS } from './mockData';
 
-const LOCAL_STORAGE_KEY = 'snapmitra_leads_v2';
+const LOCAL_STORAGE_KEY = 'snapmitra_leads_v3';
 
 export function determineLeadLabel(eventType: EventType): LeadLabel {
   switch (eventType) {
@@ -47,6 +47,34 @@ export function calculateBaseQuote(
   }, 0);
 
   return base + addonCost;
+}
+
+export function cleanContactInfo(rawInput: string): { phone: string; email?: string } {
+  const trimmed = rawInput.trim();
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) || trimmed.includes('@');
+
+  if (isEmail) {
+    return {
+      phone: 'Provided via Email',
+      email: trimmed,
+    };
+  }
+
+  // It's a phone number
+  const digitsOnly = trimmed.replace(/[^0-9]/g, '');
+  if (digitsOnly.length === 10) {
+    return {
+      phone: `+91 ${digitsOnly.slice(0, 5)} ${digitsOnly.slice(5)}`,
+    };
+  } else if (digitsOnly.length === 12 && digitsOnly.startsWith('91')) {
+    return {
+      phone: `+91 ${digitsOnly.slice(2, 7)} ${digitsOnly.slice(7)}`,
+    };
+  }
+
+  return {
+    phone: trimmed.startsWith('+') ? trimmed : `+91 ${trimmed}`,
+  };
 }
 
 export function generateWhatsAppPitch(
@@ -145,6 +173,7 @@ export const leadService = {
       created_at: payload.created_at || new Date().toISOString(),
       client_name: payload.client_name,
       client_phone: payload.client_phone,
+      client_email: payload.client_email || '',
       event_type: payload.event_type,
       event_date: payload.event_date,
       guest_count: payload.guest_count,

@@ -15,7 +15,7 @@ import {
 import { useLeads } from '../context/LeadContext';
 import { checkGuardrails, STRICT_GUARDRAIL_RESPONSE, GUARDRAIL_DEMO_PROMPTS } from '../services/guardrails';
 import { EventType, LeadLabel } from '../types/lead';
-import { determineLeadLabel, calculateBaseQuote, generateWhatsAppPitch, formatINR } from '../services/leadService';
+import { determineLeadLabel, calculateBaseQuote, generateWhatsAppPitch, formatINR, cleanContactInfo } from '../services/leadService';
 
 interface ChatMessage {
   id: string;
@@ -49,6 +49,7 @@ export const SnapBotModal: React.FC = () => {
   const [leadData, setLeadData] = useState<{
     name: string;
     phone: string;
+    email?: string;
     eventType: EventType;
     eventDate: string;
     guestCount: number;
@@ -57,6 +58,7 @@ export const SnapBotModal: React.FC = () => {
   }>({
     name: '',
     phone: '',
+    email: '',
     eventType: 'Wedding',
     eventDate: '',
     guestCount: 300,
@@ -110,7 +112,6 @@ export const SnapBotModal: React.FC = () => {
     setSelectedAddons([]);
   };
 
-  // Initialize bot greeting when modal opens
   useEffect(() => {
     if (isSnapBotOpen && messages.length === 0) {
       startConversation();
@@ -142,7 +143,6 @@ export const SnapBotModal: React.FC = () => {
     }, delayMs);
   };
 
-  // Speech Recognition (Voice Input)
   const toggleVoiceInput = () => {
     const windowWithSpeech = window as unknown as {
       SpeechRecognition?: new () => any;
@@ -198,7 +198,6 @@ export const SnapBotModal: React.FC = () => {
     const text = (textToSend || inputText).trim();
     if (!text) return;
 
-    // Add user message
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       sender: 'user',
@@ -215,7 +214,6 @@ export const SnapBotModal: React.FC = () => {
       return;
     }
 
-    // Step-by-step state machine
     processStepInput(text);
   };
 
@@ -224,19 +222,20 @@ export const SnapBotModal: React.FC = () => {
       const cleanName = input.replace(/^(my name is|i am|this is)\s*/i, '').trim();
       setLeadData((prev) => ({ ...prev, name: cleanName }));
       setCurrentStep('phone');
+      // Prompt explicitly asks for mail id or phone number:
       addBotMessage(
-        `Wonderful to connect with you, ${cleanName}! 📸 Could you please share your WhatsApp or phone number so we can share package portfolios?`
+        `Wonderful to connect with you, ${cleanName}! 📸 Could you please share your WhatsApp / phone number or email ID so we can share package portfolios?`
       );
       return;
     }
 
     if (currentStep === 'phone') {
-      const cleanPhone = input.trim();
-      let formattedPhone = cleanPhone;
-      if (!cleanPhone.startsWith('+')) {
-        formattedPhone = cleanPhone.startsWith('91') ? `+${cleanPhone}` : `+91 ${cleanPhone}`;
-      }
-      setLeadData((prev) => ({ ...prev, phone: formattedPhone }));
+      const contact = cleanContactInfo(input);
+      setLeadData((prev) => ({
+        ...prev,
+        phone: contact.phone,
+        email: contact.email || prev.email,
+      }));
       setCurrentStep('event_type');
       addBotMessage(
         `Got it! What type of event are you planning? (Wedding, Pre-Wedding, Birthday, Corporate, or Other)`
@@ -296,7 +295,6 @@ export const SnapBotModal: React.FC = () => {
       return;
     }
 
-    // If chat already completed, just polite reply
     addBotMessage(
       `Thank you again, ${leadData.name}! Our team has received your inquiry for ${leadData.eventDate}. Feel free to ask any other standard question.`
     );
@@ -310,20 +308,18 @@ export const SnapBotModal: React.FC = () => {
     const name = leadData.name;
     const date = leadData.eventDate;
     const phone = leadData.phone;
+    const email = leadData.email;
 
-    // Pricing Rule:
     const isLuxury = eventType === 'Wedding' || guests >= 500;
     const calculatedQuote = calculateBaseQuote(eventType, isLuxury ? 'Platinum' : 'Gold', addons);
     const label = determineLeadLabel(eventType);
 
     const addonPhrase = addons.length > 0 ? ` Addons requested: ${addons.join(', ')}.` : '';
 
-    // 2-line AI generated summary on chat complete
     const chatSummary = `Exclusive ${eventType} celebration for ~${guests} guests on ${date}.\nClient requested ${
       isLuxury ? 'Platinum luxury coverage with 4K cinema & candid team' : 'Gold standard coverage package'
     }.${addonPhrase}`;
 
-    // WhatsApp draft dynamically in friendly, warm Indian English
     const whatsappDraft = generateWhatsAppPitch({
       client_name: name,
       event_type: eventType,
@@ -333,7 +329,6 @@ export const SnapBotModal: React.FC = () => {
       selected_addons: addons,
     });
 
-    // Verbatim conversational ending:
     const finalEndingMessage = `Thank you, ${name}! We are checking our camera schedules for ${date}. Our studio will reach out to you shortly.`;
 
     const quoteMessage = `Based on your ${eventType} details${addons.length > 0 ? ` and selected upgrades` : ''}, your total investment quote is ${formatINR(
@@ -362,6 +357,7 @@ export const SnapBotModal: React.FC = () => {
         const created = await addLead({
           client_name: name,
           client_phone: phone,
+          client_email: email,
           event_type: eventType,
           event_date: date,
           guest_count: guests,
@@ -371,7 +367,7 @@ export const SnapBotModal: React.FC = () => {
           calculated_quote: calculatedQuote,
           whatsapp_draft: whatsappDraft,
           selected_addons: addons,
-          notes: 'Captured via SnapBot with Voice & Guardrail validation',
+          notes: email ? `Client Email: ${email}` : 'Captured via SnapBot with Guardrail validation',
         });
 
         setCompletedLeadSummary({
@@ -423,7 +419,7 @@ export const SnapBotModal: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-gray-400">
-                PixelStory Studios • Voice-Enabled Lead AI
+                PixelStory Studios • Voice &amp; Email Lead AI
               </p>
             </div>
           </div>
@@ -643,7 +639,6 @@ export const SnapBotModal: React.FC = () => {
           }}
           className="p-3 sm:p-4 bg-[#14141A] border-t border-[#27272E] flex items-center gap-2"
         >
-          {/* Voice Input Mic Button */}
           <button
             type="button"
             onClick={toggleVoiceInput}
@@ -668,10 +663,10 @@ export const SnapBotModal: React.FC = () => {
                 : currentStep === 'name'
                 ? 'Type or speak your name...'
                 : currentStep === 'phone'
-                ? 'Type 10-digit phone...'
+                ? 'Type WhatsApp number or Email ID (e.g. name@gmail.com)...'
                 : currentStep === 'event_date'
                 ? 'Type event date (e.g. 2026-12-14)...'
-                : 'Ask SnapBot a question or speak...'
+                : 'Ask SnapBot a question or enter details...'
             }
             className="flex-1 px-4 py-3 rounded-xl bg-[#0F0F13] border border-[#27272E] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-xs sm:text-sm text-white placeholder-gray-500 transition-colors"
           />

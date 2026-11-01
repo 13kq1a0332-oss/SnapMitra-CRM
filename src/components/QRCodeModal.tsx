@@ -66,3 +66,4 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => 
     </div>
   );
 };
+

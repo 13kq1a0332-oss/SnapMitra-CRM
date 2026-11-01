@@ -13,11 +13,12 @@ import {
   Layers,
   Calculator,
   X,
-  CheckCircle2,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
-import { LeadLabel, LeadStatus, EventType, NewLeadPayload } from '../types/lead';
-import { formatINR, calculateBaseQuote, generateWhatsAppPitch, determineLeadLabel } from '../services/leadService';
+import { LeadLabel, LeadStatus, EventType } from '../types/lead';
+import { formatINR, calculateBaseQuote, generateWhatsAppPitch, determineLeadLabel, cleanContactInfo } from '../services/leadService';
 import { LeadDrawer } from './LeadDrawer';
 
 export const AdminDashboard: React.FC = () => {
@@ -42,6 +43,7 @@ export const AdminDashboard: React.FC = () => {
   const [manualForm, setManualForm] = useState({
     client_name: '',
     client_phone: '',
+    client_email: '',
     event_type: 'Wedding' as EventType,
     event_date: '',
     guest_count: 500,
@@ -66,9 +68,11 @@ export const AdminDashboard: React.FC = () => {
   // Filtered Leads
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
+      const emailMatch = lead.client_email?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
       const matchesSearch =
         lead.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lead.client_phone.includes(searchQuery) ||
+        emailMatch ||
         lead.event_type.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
@@ -109,10 +113,11 @@ export const AdminDashboard: React.FC = () => {
 
   const exportCSV = () => {
     if (leads.length === 0) return;
-    const headers = ['Client Name', 'Phone', 'Event Type', 'Event Date', 'Guests', 'Label', 'Status', 'Quote (INR)', 'Notes'];
+    const headers = ['Client Name', 'Phone', 'Email', 'Event Type', 'Event Date', 'Guests', 'Label', 'Status', 'Quote (INR)', 'Notes'];
     const rows = leads.map((l) => [
       `"${l.client_name}"`,
       `"${l.client_phone}"`,
+      `"${l.client_email || ''}"`,
       `"${l.event_type}"`,
       `"${l.event_date}"`,
       l.guest_count,
@@ -135,14 +140,15 @@ export const AdminDashboard: React.FC = () => {
 
   const handleManualLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!manualForm.client_name || !manualForm.client_phone || !manualForm.event_date) {
-      showToast('Please fill in client name, phone and date', 'warning');
+    if (!manualForm.client_name || (!manualForm.client_phone && !manualForm.client_email) || !manualForm.event_date) {
+      showToast('Please fill in client name, contact details and event date', 'warning');
       return;
     }
 
+    const cleanContact = cleanContactInfo(manualForm.client_phone || manualForm.client_email);
     const calculated = manualForm.quote || calculateBaseQuote(manualForm.event_type, 'Gold');
     const label = determineLeadLabel(manualForm.event_type);
-    const summary = `Manual walk-in inquiry for ${manualForm.event_type} (${manualForm.guest_count} guests) on ${manualForm.event_date}.\nNotes: ${manualForm.notes || 'None'}`;
+    const summary = `Manual walk-in inquiry for ${manualForm.event_type} (~${manualForm.guest_count} guests) on ${manualForm.event_date}.\nNotes: ${manualForm.notes || 'None'}`;
     const draft = generateWhatsAppPitch({
       client_name: manualForm.client_name,
       event_type: manualForm.event_type,
@@ -153,7 +159,8 @@ export const AdminDashboard: React.FC = () => {
 
     await addLead({
       client_name: manualForm.client_name,
-      client_phone: manualForm.client_phone,
+      client_phone: cleanContact.phone,
+      client_email: manualForm.client_email || cleanContact.email || '',
       event_type: manualForm.event_type,
       event_date: manualForm.event_date,
       guest_count: manualForm.guest_count,
@@ -169,6 +176,7 @@ export const AdminDashboard: React.FC = () => {
     setManualForm({
       client_name: '',
       client_phone: '',
+      client_email: '',
       event_type: 'Wedding',
       event_date: '',
       guest_count: 500,
@@ -233,7 +241,7 @@ export const AdminDashboard: React.FC = () => {
 
             <button
               onClick={resetMockData}
-              title="Reset to 5+ realistic Hyderabad leads"
+              title="Reset to default Hyderabad mock leads"
               className="px-3 py-2 rounded-xl bg-[#171720] hover:bg-[#20202C] border border-[#2B2B38] text-gray-300 text-xs sm:text-sm flex items-center gap-1.5 transition-colors"
             >
               <span>Reset Data</span>
@@ -241,11 +249,8 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ============================================================ */}
-        {/* STATS ROW (Metric Cards Required in Phase 4)                */}
-        {/* ============================================================ */}
+        {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
-          {/* Card 1: Total Inquiries */}
           <div className="p-5 rounded-2xl glass-panel border border-[#27272E] hover:border-[#D4AF37]/40 transition-all shadow-luxury relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
             <div className="flex items-center justify-between mb-3">
@@ -264,7 +269,6 @@ export const AdminDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* Card 2: Premium Weddings Booked / High-Value */}
           <div className="p-5 rounded-2xl glass-panel border border-[#27272E] hover:border-red-500/40 transition-all shadow-luxury relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
             <div className="flex items-center justify-between mb-3">
@@ -283,7 +287,6 @@ export const AdminDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* Card 3: Quote Pipeline Value */}
           <div className="p-5 rounded-2xl glass-panel border border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all shadow-luxury relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
             <div className="flex items-center justify-between mb-3">
@@ -303,9 +306,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ============================================================ */}
-        {/* PIPELINE STAGES VISUAL PROGRESS BAR (ENHANCEMENT)           */}
-        {/* ============================================================ */}
+        {/* Pipeline Stages Progress Bar */}
         <div className="p-4 rounded-2xl glass-panel border border-[#27272E] mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
@@ -321,7 +322,6 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Stages Breakdown Chips */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -344,27 +344,22 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* ============================================================ */}
-        {/* INTERACTIVE LEAD TABLE SECTION                              */}
-        {/* ============================================================ */}
+        {/* Leads Table */}
         <div className="rounded-2xl glass-panel border border-[#27272E] shadow-luxury overflow-hidden">
           {/* Search & Filter Toolbar */}
           <div className="p-4 sm:p-5 border-b border-[#27272E] flex flex-col md:flex-row gap-3 md:items-center justify-between bg-[#111116]">
-            {/* Search Input */}
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search leads by client name, Hyderabad phone, event..."
+                placeholder="Search leads by client name, email, Hyderabad phone, event..."
                 className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none text-xs sm:text-sm text-white placeholder-gray-500 transition-colors"
               />
             </div>
 
-            {/* Filters */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              {/* Priority Filter */}
               <div className="flex items-center gap-1.5 bg-[#0B0B0E] px-2.5 py-1.5 rounded-xl border border-[#27272E]">
                 <Filter className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span className="text-gray-400">Priority:</span>
@@ -380,7 +375,6 @@ export const AdminDashboard: React.FC = () => {
                 </select>
               </div>
 
-              {/* Status Filter */}
               <div className="flex items-center gap-1.5 bg-[#0B0B0E] px-2.5 py-1.5 rounded-xl border border-[#27272E]">
                 <span className="text-gray-400">Status:</span>
                 <select
@@ -398,12 +392,11 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Leads Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[#14141B] text-gray-400 uppercase text-[11px] tracking-wider border-b border-[#27272E]">
                 <tr>
-                  <th className="py-3.5 px-4 sm:px-6">Client Name</th>
+                  <th className="py-3.5 px-4 sm:px-6">Client Name &amp; Contact</th>
                   <th className="py-3.5 px-4">Event Date</th>
                   <th className="py-3.5 px-4">Event Type</th>
                   <th className="py-3.5 px-4">Priority Tag</th>
@@ -420,93 +413,110 @@ export const AdminDashboard: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredLeads.map((lead) => (
-                    <tr
-                      key={lead.id}
-                      onClick={() => setSelectedLead(lead)}
-                      className="hover:bg-[#181822]/80 transition-colors cursor-pointer group"
-                    >
-                      {/* Client Name + Phone */}
-                      <td className="py-4 px-4 sm:px-6">
-                        <div className="font-medium text-white group-hover:text-[#D4AF37] transition-colors">
-                          {lead.client_name}
-                        </div>
-                        <div className="text-[11px] text-gray-400 font-mono mt-0.5">
-                          {lead.client_phone}
-                        </div>
-                      </td>
+                  filteredLeads.map((lead) => {
+                    const cleanPhone = lead.client_phone && !lead.client_phone.includes('@') && lead.client_phone !== 'Provided via Email'
+                      ? lead.client_phone
+                      : null;
+                    const cleanEmail = lead.client_email || (lead.client_phone && lead.client_phone.includes('@') ? lead.client_phone.replace(/^\+91\s*/, '') : null);
 
-                      {/* Event Date */}
-                      <td className="py-4 px-4 text-gray-300 font-mono">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                          <span>{lead.event_date}</span>
-                        </div>
-                      </td>
+                    return (
+                      <tr
+                        key={lead.id}
+                        onClick={() => setSelectedLead(lead)}
+                        className="hover:bg-[#181822]/80 transition-colors cursor-pointer group"
+                      >
+                        {/* Client Name + Phone + Email */}
+                        <td className="py-4 px-4 sm:px-6">
+                          <div className="font-medium text-white group-hover:text-[#D4AF37] transition-colors">
+                            {lead.client_name}
+                          </div>
+                          <div className="text-[11px] text-gray-400 font-mono mt-0.5 space-y-0.5">
+                            {cleanPhone && (
+                              <div className="flex items-center gap-1.5">
+                                <Phone className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                                <span>{cleanPhone}</span>
+                              </div>
+                            )}
+                            {cleanEmail && (
+                              <div className="flex items-center gap-1.5 text-gray-300">
+                                <Mail className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                                <span className="lowercase truncate max-w-[200px]">{cleanEmail}</span>
+                              </div>
+                            )}
+                          </div>
+                        </td>
 
-                      {/* Event Type */}
-                      <td className="py-4 px-4 text-gray-200">
-                        <span className="font-medium">{lead.event_type}</span>
-                        <span className="text-[11px] text-gray-500 block">
-                          ~{lead.guest_count} guests
-                        </span>
-                      </td>
+                        {/* Event Date */}
+                        <td className="py-4 px-4 text-gray-300 font-mono">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                            <span>{lead.event_date}</span>
+                          </div>
+                        </td>
 
-                      {/* Priority Tag Badge (Required: Red for High-Value, Yellow for Medium, Blue for Standard) */}
-                      <td className="py-4 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${priorityBadgeStyle(
-                            lead.label
-                          )}`}
-                        >
-                          {lead.label}
-                        </span>
-                      </td>
+                        {/* Event Type */}
+                        <td className="py-4 px-4 text-gray-200">
+                          <span className="font-medium">{lead.event_type}</span>
+                          <span className="text-[11px] text-gray-500 block">
+                            ~{lead.guest_count} guests
+                          </span>
+                        </td>
 
-                      {/* Calculated Quote */}
-                      <td className="py-4 px-4 font-serif font-bold text-white">
-                        {formatINR(lead.calculated_quote)}
-                      </td>
+                        {/* Priority Tag Badge */}
+                        <td className="py-4 px-4">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${priorityBadgeStyle(
+                              lead.label
+                            )}`}
+                          >
+                            {lead.label}
+                          </span>
+                        </td>
 
-                      {/* Status */}
-                      <td className="py-4 px-4">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium border ${statusBadgeStyle(
-                            lead.status
-                          )}`}
-                        >
-                          {lead.status}
-                        </span>
-                      </td>
+                        {/* Calculated Quote */}
+                        <td className="py-4 px-4 font-serif font-bold text-white">
+                          {formatINR(lead.calculated_quote)}
+                        </td>
 
-                      {/* Action */}
-                      <td className="py-4 px-4 sm:px-6 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedLead(lead);
-                          }}
-                          className="px-3 py-1.5 rounded-lg bg-[#20202A] group-hover:bg-[#D4AF37] text-gray-300 group-hover:text-black font-semibold text-xs flex items-center gap-1.5 ml-auto transition-all shadow-sm"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>WhatsApp Pitch</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        {/* Status */}
+                        <td className="py-4 px-4">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium border ${statusBadgeStyle(
+                              lead.status
+                            )}`}
+                          >
+                            {lead.status}
+                          </span>
+                        </td>
+
+                        {/* Action */}
+                        <td className="py-4 px-4 sm:px-6 text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedLead(lead);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-[#20202A] group-hover:bg-[#D4AF37] text-gray-300 group-hover:text-black font-semibold text-xs flex items-center gap-1.5 ml-auto transition-all shadow-sm"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>WhatsApp Pitch</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
 
-          {/* Table Footer */}
           <div className="p-4 bg-[#111116] border-t border-[#27272E] text-xs text-gray-400 flex items-center justify-between">
             <div>
               Showing <span className="text-white font-medium">{filteredLeads.length}</span> of{' '}
               <span className="text-white font-medium">{leads.length}</span> leads
             </div>
             <div className="text-[11px] text-gray-500">
-              Click any row to open the Lead Details Drawer &amp; WhatsApp pitch generator
+              Click any row to open the Lead Details Drawer, official PDF quotation &amp; WhatsApp pitch
             </div>
           </div>
         </div>
@@ -542,16 +552,28 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs text-gray-300 font-semibold mb-1">Hyderabad Mobile Phone</label>
-                <input
-                  type="text"
-                  required
-                  value={manualForm.client_phone}
-                  onChange={(e) => setManualForm({ ...manualForm, client_phone: e.target.value })}
-                  placeholder="+91 98490 12345"
-                  className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white font-mono"
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs text-gray-300 font-semibold mb-1">WhatsApp / Phone</label>
+                  <input
+                    type="text"
+                    value={manualForm.client_phone}
+                    onChange={(e) => setManualForm({ ...manualForm, client_phone: e.target.value })}
+                    placeholder="98490 12345"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-gray-300 font-semibold mb-1">Email ID</label>
+                  <input
+                    type="email"
+                    value={manualForm.client_email}
+                    onChange={(e) => setManualForm({ ...manualForm, client_email: e.target.value })}
+                    placeholder="name@gmail.com"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0B0B0E] border border-[#27272E] focus:border-[#D4AF37] text-xs outline-none text-white font-mono"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">

@@ -229,3 +229,4 @@ export const QuotationModal: React.FC<QuotationModalProps> = ({ lead, isOpen, on
     </div>
   );
 };
+

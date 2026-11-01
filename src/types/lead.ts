@@ -9,6 +9,7 @@ export interface Lead {
   created_at: string;
   client_name: string;
   client_phone: string;
+  client_email?: string;
   event_type: EventType;
   event_date: string;
   guest_count: number;

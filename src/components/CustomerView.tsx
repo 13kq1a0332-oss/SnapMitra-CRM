@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Check,
@@ -12,9 +12,67 @@ import {
   Quote,
   X,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   HelpCircle,
+  Phone,
+  Mail,
+  MessageCircle,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
+
+interface BackgroundSlide {
+  id: number;
+  title: string;
+  subtitle: string;
+  tagline: string;
+  url: string;
+}
+
+const LUXURY_SLIDES: BackgroundSlide[] = [
+  {
+    id: 1,
+    title: 'The Nizam Royal Union',
+    subtitle: 'Atmospheric & Luxury Candlelight',
+    tagline: 'Warm candlelight, deep shadows & champagne gold highlights',
+    url: 'https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?q=80&w=1920&auto=format&fit=crop',
+  },
+  {
+    id: 2,
+    title: 'Traditional Wedding Portfolio',
+    subtitle: 'Deep Reds & Champagne Gold',
+    tagline: 'Intricate gold jewelry, sacred rituals and warm rich heritage tones',
+    url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
+  },
+  {
+    id: 3,
+    title: 'Candid Cinematography',
+    subtitle: 'Motion & Sunset Golden Light',
+    tagline: 'Warm lens flares, dynamic emotional storytelling and Hollywood color grading',
+    url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
+  },
+  {
+    id: 4,
+    title: 'Pre-Wedding Outdoor Shoots',
+    subtitle: 'Romantic Nature & Mist Contrast',
+    tagline: 'Soft natural daylight, scenic hills and timeless editorial couple portraiture',
+    url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
+  },
+  {
+    id: 5,
+    title: 'Corporate & High-Society Galas',
+    subtitle: 'Classy, Modern & Prestigious',
+    tagline: 'Golden bubbles, sleek celebration lighting and executive leadership summits',
+    url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=1200&auto=format&fit=crop',
+  },
+  {
+    id: 6,
+    title: 'Production Equipment & Behind-the-Scenes',
+    subtitle: 'Cinema Line Cameras & Prime Lenses',
+    tagline: 'Matte black Sony FX bodies, G-Master glass and licensed 4K cinema drones',
+    url: 'https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=1200&auto=format&fit=crop',
+  },
+];
 
 interface PortfolioGalleryItem {
   id: string;
@@ -31,7 +89,7 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
     title: 'The Nizam Royal Palace Union',
     location: 'Taj Falaknuma Palace, Hyderabad',
     gear: 'Sony FX6 & FX3 • Master 85mm f/1.4 • DJI Inspire 3 8K',
-    image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?q=80&w=1200&auto=format&fit=crop',
     description: 'A grand Telugu royal celebration overlooking the City of Pearls, captured with cinematic color grading.',
   },
   {
@@ -39,7 +97,7 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
     title: 'Sunset Mist Romance',
     location: 'Ananthagiri Hills, Vikarabad',
     gear: 'Canon Cinema EOS • Anamorphic Primes • 4K Drone Fleet',
-    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
     description: 'Golden-hour couple portraiture framed against pine trees and mist-draped hilltops.',
   },
   {
@@ -47,8 +105,32 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
     title: 'The Heritage Muhurtham',
     location: 'Jubilee Hills Heritage Gardens',
     gear: 'Dual Sony A7S III • Steadicam Master Rig • Live LED stream',
-    image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
     description: 'Traditional Telugu rituals, sacred fire embers, and candid familial emotions documented raw.',
+  },
+  {
+    id: 'prewedding',
+    title: 'Outdoor Scenic Harmony',
+    location: 'Ramoji Film City & Golconda',
+    gear: 'Sony A7IV • 50mm f/1.2 GM • Gimbal 3-Axis Stabilizer',
+    image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
+    description: 'Romantic couple frames crafted in Hyderabad with high-fashion lighting and color grading.',
+  },
+  {
+    id: 'corporate',
+    title: 'Leadership Summit Gala',
+    location: 'Novotel HICC Hyderabad',
+    gear: 'Multi-cam broadcast setup • Wireless Lavalier Audio • 4K Livestream',
+    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=1200&auto=format&fit=crop',
+    description: 'Keynotes, executive awards, and networking evenings covered with crisp corporate finesse.',
+  },
+  {
+    id: 'gear',
+    title: 'Master Cinema Line Rig',
+    location: 'PixelStory Gear Locker, Jubilee Hills',
+    gear: 'Sony FX3 & FX6 • DJI Ronin RS3 Pro • Teradek Wireless TX',
+    image: 'https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=1200&auto=format&fit=crop',
+    description: 'Our calibrated in-house equipment fleet ensuring zero technical hiccups on your special day.',
   },
 ];
 
@@ -96,6 +178,28 @@ export const CustomerView: React.FC = () => {
   const { openSnapBotWithPackage, setIsSnapBotOpen, setIsPackageCustomizerOpen } = useLeads();
   const [activeLightbox, setActiveLightbox] = useState<PortfolioGalleryItem | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const ownerPhone = '8497980957';
+  const ownerWhatsAppUrl = `https://wa.me/91${ownerPhone}?text=${encodeURIComponent('Hi PixelStory Studios, I would like to inquire about wedding/event photography packages.')}`;
+  const ownerEmail = 'Srikanthmallavarapu14@gmail.com';
+  const ownerMailtoUrl = `mailto:${ownerEmail}?subject=${encodeURIComponent('PixelStory Studios Photography Inquiry')}`;
+
+  // Automated background slides advancement
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % LUXURY_SLIDES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentSlideIndex((prev) => (prev + 1) % LUXURY_SLIDES.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlideIndex((prev) => (prev - 1 + LUXURY_SLIDES.length) % LUXURY_SLIDES.length);
+  };
 
   const offerings = [
     {
@@ -104,7 +208,7 @@ export const CustomerView: React.FC = () => {
       packageTier: 'Gold Package',
       price: '₹75,000',
       badgeColor: 'border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/10',
-      image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=900&q=80',
+      image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
       tagline: 'Timeless rituals documented with regal authenticity and precision.',
       features: [
         '2 Master Traditional Photographers',
@@ -123,7 +227,7 @@ export const CustomerView: React.FC = () => {
       packageTier: 'Platinum Package',
       price: '₹1,50,000',
       badgeColor: 'border-[#FFDF73] text-[#0B0B0C] bg-[#D4AF37]',
-      image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=900&q=80',
+      image: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
       tagline: 'Our flagship cinematic masterpiece: pure emotion and Hollywood color grading.',
       features: [
         '2 Candid Photo Artists + 2 4K Cinema Directors',
@@ -142,7 +246,7 @@ export const CustomerView: React.FC = () => {
       packageTier: 'Custom Base Packages',
       price: 'From ₹50,000 - ₹75,000',
       badgeColor: 'border-purple-400/40 text-purple-300 bg-purple-900/20',
-      image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=900&q=80',
+      image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
       tagline: 'Romantic, high-fashion portraiture at Hyderabad’s most scenic landmarks.',
       features: [
         'Full Day Shoot (Golconda, Ananthagiri Hills or Heritage Palaces)',
@@ -157,63 +261,186 @@ export const CustomerView: React.FC = () => {
     },
   ];
 
+  const currentSlide = LUXURY_SLIDES[currentSlideIndex];
+
   return (
-    <div className="min-h-screen bg-[#0B0B0C] pb-28 text-white relative">
-      {/* Background ambient luxury glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] bg-gradient-to-b from-[#D4AF37]/10 via-[#D4AF37]/5 to-transparent pointer-events-none blur-3xl -z-10" />
+    <div className="min-h-screen bg-[#0B0B0C] pb-28 text-white relative overflow-hidden">
+      {/* ============================================================ */}
+      {/* LUXURY BACKGROUND SLIDES-WISE CAROUSEL HERO SECTION           */}
+      {/* ============================================================ */}
+      <section className="relative min-h-[90vh] flex flex-col justify-between overflow-hidden">
+        {/* Dynamic Background Image Layers with Smooth Cross-fade */}
+        {LUXURY_SLIDES.map((slide, idx) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out bg-cover bg-center ${
+              idx === currentSlideIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
+            } transform transition-transform duration-10000`}
+            style={{
+              backgroundImage: `linear-gradient(to bottom, rgba(11, 11, 12, 0.78) 0%, rgba(11, 11, 12, 0.88) 60%, rgba(11, 11, 12, 0.98) 100%), url('${slide.url}')`,
+            }}
+          />
+        ))}
 
-      {/* Hero Section */}
-      <section className="pt-12 pb-14 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A1A22] border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-medium mb-6 shadow-gold-sm">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Hyderabad’s Premier Luxury Wedding Photography</span>
+        {/* Ambient Top Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-64 bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
+
+        {/* Hero Content */}
+        <div className="relative z-10 pt-14 pb-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center flex-1 flex flex-col justify-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A1A22]/90 backdrop-blur-md border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-medium mb-6 shadow-gold-sm mx-auto animate-fadeIn">
+            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Hyderabad’s Premier Luxury Wedding Photography</span>
+          </div>
+
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight sm:leading-tight">
+            Where Grand Hyderabad Celebrations Become{' '}
+            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#F3E5AB] via-[#D4AF37] to-[#AA7C11]">
+              Immortal Works of Art
+            </span>
+          </h1>
+
+          <p className="mt-5 text-sm sm:text-base text-gray-200 max-w-2xl mx-auto font-sans leading-relaxed drop-shadow">
+            From Falaknuma palace ceremonies to serene destination pre-weddings, PixelStory Studios crafts 
+            masterful frames with zero compromises. Select our signature packages below or chat with 
+            <strong className="text-[#D4AF37] font-medium"> SnapBot</strong> for an instant verified quote.
+          </p>
+
+          {/* Action Buttons */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setIsSnapBotOpen(true)}
+              className="px-6 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-xs sm:text-sm shadow-luxury hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-black" />
+              <span>Chat with SnapBot AI</span>
+            </button>
+
+            <button
+              onClick={() => setIsPackageCustomizerOpen(true)}
+              className="px-6 py-3.5 rounded-full bg-[#181822]/90 backdrop-blur-md hover:bg-[#232330] text-gray-200 border border-[#D4AF37]/40 hover:border-[#D4AF37] font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-sm"
+            >
+              <Calculator className="w-4 h-4 text-[#D4AF37]" />
+              <span>Interactive Quote Calculator</span>
+            </button>
+
+            {/* Direct WhatsApp Call Button */}
+            <a
+              href={ownerWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3.5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4 text-[#25D366]" />
+              <span>WhatsApp Director: {ownerPhone}</span>
+            </a>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-gray-300">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <Award className="w-4 h-4 text-[#D4AF37]" />
+              <span>850+ Luxury Celebrations</span>
+            </div>
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <Film className="w-4 h-4 text-[#D4AF37]" />
+              <span>4K Cinema Drone Fleet</span>
+            </div>
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
+              <span>Zero-Delay Guaranteed Delivery</span>
+            </div>
+          </div>
         </div>
 
-        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight sm:leading-tight">
-          Where Grand Hyderabad Celebrations Become{' '}
-          <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#F3E5AB] via-[#D4AF37] to-[#AA7C11]">
-            Immortal Works of Art
-          </span>
-        </h1>
+        {/* Slide Indicators & Navigation Controls */}
+        <div className="relative z-10 px-4 sm:px-8 py-5 border-t border-white/10 bg-black/60 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3">
+          {/* Current Slide Info */}
+          <div className="flex items-center gap-3 text-left">
+            <span className="font-mono text-xs text-[#D4AF37] font-bold">
+              0{currentSlide.id} / 0{LUXURY_SLIDES.length}
+            </span>
+            <div className="hidden sm:block border-l border-gray-700 pl-3">
+              <span className="text-xs font-semibold text-white block">{currentSlide.title}</span>
+              <span className="text-[11px] text-gray-400">{currentSlide.tagline}</span>
+            </div>
+          </div>
 
-        <p className="mt-5 text-sm sm:text-base text-gray-300 max-w-2xl mx-auto font-sans leading-relaxed">
-          From Falaknuma palace ceremonies to serene destination pre-weddings, PixelStory Studios crafts 
-          masterful frames with zero compromises. Select our signature packages below or chat with 
-          <strong className="text-[#D4AF37] font-medium"> SnapBot</strong> for an instant verified quote.
-        </p>
+          {/* Dots Indicator */}
+          <div className="flex items-center gap-2">
+            {LUXURY_SLIDES.map((slide, idx) => (
+              <button
+                key={slide.id}
+                onClick={() => setCurrentSlideIndex(idx)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  idx === currentSlideIndex
+                    ? 'w-7 bg-[#D4AF37] shadow-gold-sm'
+                    : 'w-2 bg-gray-600 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
 
-        {/* Hero Quick Action Buttons */}
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <button
-            onClick={() => setIsSnapBotOpen(true)}
-            className="px-6 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-xs sm:text-sm shadow-gold-sm hover:scale-105 transition-transform flex items-center gap-2"
-          >
-            <Sparkles className="w-4 h-4 text-black" />
-            <span>Chat with SnapBot AI</span>
-          </button>
-
-          <button
-            onClick={() => setIsPackageCustomizerOpen(true)}
-            className="px-6 py-3 rounded-full bg-[#181822] hover:bg-[#232330] text-gray-200 border border-[#2E2E3E] hover:border-[#D4AF37]/50 font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
-          >
-            <Calculator className="w-4 h-4 text-[#D4AF37]" />
-            <span>Interactive Quote Calculator</span>
-          </button>
+          {/* Slide Arrow Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={prevSlide}
+              title="Previous Slide"
+              className="p-1.5 rounded-lg bg-white/5 hover:bg-[#D4AF37] hover:text-black text-gray-300 border border-white/10 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextSlide}
+              title="Next Slide"
+              className="p-1.5 rounded-lg bg-white/5 hover:bg-[#D4AF37] hover:text-black text-gray-300 border border-white/10 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+      </section>
 
-        {/* Trust Badges */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-gray-400">
-          <div className="flex items-center gap-2">
-            <Award className="w-4 h-4 text-[#D4AF37]" />
-            <span>850+ Luxury Celebrations</span>
+      {/* Immediate Studio Owner Contact Banner */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-10">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#171722] via-[#1F1F2C] to-[#171722] border border-[#D4AF37]/30 shadow-luxury flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shrink-0">
+              <Phone className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-serif font-bold text-sm sm:text-base text-white">
+                  Need Immediate Date Confirmation or Custom Itinerary?
+                </h3>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                  Direct Line
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Speak directly with Director Srikanth Mallavarapu for Falaknuma &amp; Hyderabad dates.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Film className="w-4 h-4 text-[#D4AF37]" />
-            <span>4K Cinema Drone Fleet</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-            <span>Zero-Delay Guaranteed Delivery</span>
+
+          <div className="flex items-center gap-3">
+            <a
+              href={ownerWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-black font-bold text-xs tracking-wide flex items-center gap-2 shadow-md transition-all hover:scale-105"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>WhatsApp: {ownerPhone}</span>
+            </a>
+
+            <a
+              href={ownerMailtoUrl}
+              className="px-4 py-2.5 rounded-xl bg-[#1C1C24] hover:bg-[#282834] border border-[#2F2F3D] text-gray-200 text-xs font-medium flex items-center gap-2 transition-colors"
+            >
+              <Mail className="w-4 h-4 text-[#D4AF37]" />
+              <span>Email Studio</span>
+            </a>
           </div>
         </div>
       </section>
@@ -311,7 +538,7 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
-      {/* Real Hyderabad Weddings Showcase */}
+      {/* Real Hyderabad Weddings Showcase (Featuring 6 High-Res URLs) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
           <div>
@@ -400,7 +627,7 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
-      {/* FAQ Accordion Section (Enhancement) */}
+      {/* FAQ Accordion Section */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
