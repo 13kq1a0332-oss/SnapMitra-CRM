@@ -39,6 +39,7 @@ interface BackgroundSlide {
   subtitle: string;
   tagline: string;
   url: string;
+  focalPoint?: string;
 }
 
 const LUXURY_SLIDES: BackgroundSlide[] = [
@@ -46,43 +47,65 @@ const LUXURY_SLIDES: BackgroundSlide[] = [
     id: 1,
     title: 'The Nizam Royal Union',
     subtitle: 'Atmospheric & Luxury Candlelight',
-    tagline: 'Warm candlelight, deep shadows & champagne gold highlights',
+    tagline: 'Warm candlelight, deep shadows & champagne gold highlights at Falaknuma',
     url: 'https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 35%',
   },
   {
     id: 2,
-    title: 'Traditional Wedding Portfolio',
-    subtitle: 'Deep Reds & Champagne Gold',
-    tagline: 'Intricate gold jewelry, sacred rituals and warm rich heritage tones',
-    url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
+    title: 'Sacred Vedic Muhurtham & Mandap Fire',
+    subtitle: 'Sacred Rituals & Deep Marigold Blossoms',
+    tagline: 'Traditional Vedic pheras, sacred fire embers, and gold temple jewelry',
+    url: 'https://images.unsplash.com/photo-1587271407850-8d438ca9fdf2?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 40%',
   },
   {
     id: 3,
-    title: 'Candid Cinematography',
-    subtitle: 'Motion & Sunset Golden Light',
-    tagline: 'Warm lens flares, dynamic emotional storytelling and Hollywood color grading',
-    url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
+    title: 'Royal Heritage Bridal Elegance',
+    subtitle: 'Kanjeevaram Saree & Heritage Gold',
+    tagline: 'Intricate temple gold jewelry, jasmine blossoms, and regal bridal poise',
+    url: 'https://images.unsplash.com/photo-1544077960-604201fe74bc?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 25%',
   },
   {
     id: 4,
-    title: 'Pre-Wedding Outdoor Shoots',
-    subtitle: 'Romantic Nature & Mist Contrast',
-    tagline: 'Soft natural daylight, scenic hills and timeless editorial couple portraiture',
-    url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
+    title: 'Candid Golden Hour Sunset Cinematography',
+    subtitle: 'Motion & Sunset Golden Light',
+    tagline: 'Warm lens flares, dynamic emotional couple storytelling & Hollywood color grading',
+    url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 35%',
   },
   {
     id: 5,
-    title: 'Corporate & High-Society Galas',
-    subtitle: 'Classy, Modern & Prestigious',
-    tagline: 'Golden bubbles, sleek celebration lighting and executive leadership summits',
-    url: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=1200&auto=format&fit=crop',
+    title: 'Grand Sangeet & Reception Celebration',
+    subtitle: 'Starlight Ballroom & Cold Pyro Sparks',
+    tagline: 'Starlight ballroom ceiling, cold pyros, and electric Telugu musical celebration',
+    url: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 45%',
   },
   {
     id: 6,
-    title: 'Production Equipment & Behind-the-Scenes',
-    subtitle: 'Cinema Line Cameras & Prime Lenses',
-    tagline: 'Matte black Sony FX bodies, G-Master glass and licensed 4K cinema drones',
-    url: 'https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=1200&auto=format&fit=crop',
+    title: 'Pre-Wedding Romantic Outdoor Hills',
+    subtitle: 'Mist Contrast & Scenic Vistas',
+    tagline: 'Soft natural daylight, pine hills at Ananthagiri and timeless editorial portraiture',
+    url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 35%',
+  },
+  {
+    id: 7,
+    title: 'Sacred Mangal Sutra & Handcrafted Gold',
+    subtitle: 'Deep Reds & Royal Heritage Detail',
+    tagline: 'Close-up of sacred Telugu wedding jewelry, mehendi, and raw familial emotion',
+    url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 50%',
+  },
+  {
+    id: 8,
+    title: 'Production Cinema Rig & Prime Glass',
+    subtitle: 'Cinema Line Cameras & 4K Drones',
+    tagline: 'Matte black Sony FX6 & FX3 cinema bodies with G-Master prime lenses',
+    url: 'https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=1920&auto=format&fit=crop',
+    focalPoint: 'center 50%',
   },
 ];
 
@@ -105,6 +128,22 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
     description: 'A grand Telugu royal celebration overlooking the City of Pearls, captured with cinematic color grading.',
   },
   {
+    id: 'mandap-fire',
+    title: 'The Sacred Vedic Muhurtham',
+    location: 'Jubilee Hills Heritage Mandap',
+    gear: 'Dual Sony FX6 • 50mm f/1.2 GM • Calibrated Ambient Cine Lights',
+    image: 'https://images.unsplash.com/photo-1587271407850-8d438ca9fdf2?q=80&w=1200&auto=format&fit=crop',
+    description: 'Sacred Vedic pheras, marigold blossoms, and emotional parent blessings documented in 10-bit raw S-Log3.',
+  },
+  {
+    id: 'bridal-heritage',
+    title: 'Royal Heritage Bridal Elegance',
+    location: 'Chowmahalla Palace Courtyard',
+    gear: 'Sony A7R V • G-Master 85mm f/1.4 • High-Dynamic Range Lighting',
+    image: 'https://images.unsplash.com/photo-1544077960-604201fe74bc?q=80&w=1200&auto=format&fit=crop',
+    description: 'Kanjeevaram silk drape, heirloom temple gold jewelry, and royal bridal poise documented with medium-format sharpness.',
+  },
+  {
     id: 'ananthagiri',
     title: 'Sunset Mist Romance',
     location: 'Ananthagiri Hills, Vikarabad',
@@ -113,12 +152,12 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
     description: 'Golden-hour couple portraiture framed against pine trees and mist-draped hilltops.',
   },
   {
-    id: 'jubilee',
-    title: 'The Heritage Muhurtham',
-    location: 'Jubilee Hills Heritage Gardens',
-    gear: 'Dual Sony A7S III • Steadicam Master Rig • Live LED stream',
-    image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
-    description: 'Traditional Telugu rituals, sacred fire embers, and candid familial emotions documented raw.',
+    id: 'sangeet-starlight',
+    title: 'Grand Sangeet & Reception',
+    location: 'Novotel HICC Grand Ballroom',
+    gear: 'Multi-cam Cinema Rig • Cold Pyro Sync • Wireless Audio Capture',
+    image: 'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?q=80&w=1200&auto=format&fit=crop',
+    description: 'High-energy musical dance choreography and starlight ceiling celebrations covered with dynamic gimbal tracking.',
   },
   {
     id: 'prewedding',
@@ -127,22 +166,6 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
     gear: 'Sony A7IV • 50mm f/1.2 GM • Gimbal 3-Axis Stabilizer',
     image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
     description: 'Romantic couple frames crafted in Hyderabad with high-fashion lighting and color grading.',
-  },
-  {
-    id: 'corporate',
-    title: 'Leadership Summit Gala',
-    location: 'Novotel HICC Hyderabad',
-    gear: 'Multi-cam broadcast setup • Wireless Lavalier Audio • 4K Livestream',
-    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=1200&auto=format&fit=crop',
-    description: 'Keynotes, executive awards, and networking evenings covered with crisp corporate finesse.',
-  },
-  {
-    id: 'gear',
-    title: 'Master Cinema Line Rig',
-    location: 'PixelStory Gear Locker, Jubilee Hills',
-    gear: 'Sony FX3 & FX6 • DJI Ronin RS3 Pro • Teradek Wireless TX',
-    image: 'https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=1200&auto=format&fit=crop',
-    description: 'Our calibrated in-house equipment fleet ensuring zero technical hiccups on your special day.',
   },
 ];
 
@@ -303,7 +326,7 @@ export const CustomerView: React.FC = () => {
       packageTier: 'Gold Package',
       price: '₹75,000',
       badgeColor: 'border-[#D4AF37]/50 text-[#D4AF37] bg-[#D4AF37]/10',
-      image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1587271407850-8d438ca9fdf2?q=80&w=1200&auto=format&fit=crop',
       tagline: 'Timeless rituals documented with regal authenticity and precision.',
       features: [
         '2 Master Traditional Photographers',
@@ -364,18 +387,22 @@ export const CustomerView: React.FC = () => {
       {/* LUXURY BACKGROUND SLIDES-WISE CAROUSEL HERO SECTION           */}
       {/* ============================================================ */}
       <section className="relative min-h-[92vh] flex flex-col justify-between overflow-hidden">
-        {/* Dynamic Background Image Layers with Smooth Cross-fade */}
-        {LUXURY_SLIDES.map((slide, idx) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out bg-cover bg-center ${
-              idx === currentSlideIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
-            } transform transition-transform duration-10000`}
-            style={{
-              backgroundImage: `linear-gradient(to bottom, rgba(11, 11, 12, 0.78) 0%, rgba(11, 11, 12, 0.88) 60%, rgba(11, 11, 12, 0.98) 100%), url('${slide.url}')`,
-            }}
-          />
-        ))}
+        {/* Dynamic Background Image Layers with Smooth Cross-fade & Focal Framing */}
+        {LUXURY_SLIDES.map((slide, idx) => {
+          const isActive = idx === currentSlideIndex;
+          return (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out bg-cover ${
+                isActive ? 'opacity-100 animate-ken-burns' : 'opacity-0 pointer-events-none'
+              }`}
+              style={{
+                backgroundPosition: slide.focalPoint || 'center 35%',
+                backgroundImage: `linear-gradient(to bottom, rgba(11, 11, 12, 0.42) 0%, rgba(11, 11, 12, 0.65) 50%, rgba(11, 11, 12, 0.98) 100%), radial-gradient(circle at 50% 35%, rgba(11, 11, 12, 0.15) 0%, rgba(11, 11, 12, 0.75) 85%), url('${slide.url}')`,
+              }}
+            />
+          );
+        })}
 
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-64 bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
@@ -896,7 +923,7 @@ export const CustomerView: React.FC = () => {
                 <img
                   src={pkg.image}
                   alt={pkg.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover object-[center_35%] group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#131316] via-[#131316]/30 to-transparent" />
                 
@@ -986,7 +1013,7 @@ export const CustomerView: React.FC = () => {
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover object-[center_35%] group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
                 <div className="absolute bottom-3 left-4 right-4">

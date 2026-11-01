@@ -87,3 +87,17 @@ body {
   animation: goldPulse 3s infinite ease-in-out;
 }
 
+
+/* Cinematic slow zoom for luxury background slides */
+@keyframes kenBurnsSlide {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.07);
+  }
+}
+
+.animate-ken-burns {
+  animation: kenBurnsSlide 6.5s ease-out forwards;
+}
