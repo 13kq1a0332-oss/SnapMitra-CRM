@@ -106,13 +106,13 @@ export const Navbar: React.FC = () => {
                 </span>
               </div>
               <p className="text-[11px] text-gray-400 font-sans tracking-wide">
-                Luxury Wedding &amp; Candid Cinematography CRM
+                Luxury Wedding &amp; Candid Cinematography • Jubilee Hills, Hyderabad
               </p>
             </div>
           </div>
 
           {/* Navigation Controls */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Mobile Scan Button */}
             <button
               onClick={() => setIsQRModalOpen(true)}
@@ -126,10 +126,10 @@ export const Navbar: React.FC = () => {
             {/* Database indicator */}
             <div
               title={isUsingSupabase ? 'Connected to live Supabase PostgreSQL' : 'Active Local Database (Ready for Supabase)'}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border bg-[#141418] border-[#2A2A33] text-gray-400"
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border bg-[#141418] border-[#2A2A33] text-gray-300"
             >
               <Database className={`w-3.5 h-3.5 ${isUsingSupabase ? 'text-emerald-400' : 'text-[#D4AF37]'}`} />
-              <span>{isUsingSupabase ? 'Supabase Live' : 'Postgres Mode'}</span>
+              <span className="text-[11px] font-mono">{isUsingSupabase ? 'Supabase Connected' : 'Postgres Mode'}</span>
             </div>
 
             {/* View Switcher Toggle */}
@@ -158,10 +158,7 @@ export const Navbar: React.FC = () => {
                 ) : (
                   <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
                 )}
-                <span>Admin Portal</span>
-                {!isAdminAuthenticated && (
-                  <span className="hidden sm:inline text-[10px] text-gray-500 font-mono">(admin/admin)</span>
-                )}
+                <span>Studio Portal</span>
               </button>
             </div>
 

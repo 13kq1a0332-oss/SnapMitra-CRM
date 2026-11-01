@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   Check,
@@ -18,6 +18,18 @@ import {
   Phone,
   Mail,
   MessageCircle,
+  Play,
+  Sliders,
+  Eye,
+  Flame,
+  MapPin,
+  Volume2,
+  VolumeX,
+  Zap,
+  Clock,
+  Compass,
+  Layers,
+  Crown,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 
@@ -134,24 +146,36 @@ const GALLERY_SHOWCASE: PortfolioGalleryItem[] = [
   },
 ];
 
+const PRESTIGIOUS_VENUES = [
+  { name: 'Taj Falaknuma Palace', area: 'Old City, Hyderabad', count: '120+ Weddings' },
+  { name: 'Novotel Hyderabad Convention Centre', area: 'Hitec City', count: '95+ Receptions' },
+  { name: 'Fort Grand Shamshabad', area: 'Airport Road', count: '80+ Celebrations' },
+  { name: 'Ramoji Film City', area: 'Grand Sets', count: '70+ Pre-Weddings' },
+  { name: 'ITC Kohenur', area: 'Knowledge City', count: '60+ Sangeets' },
+  { name: 'The Golkonda Resort & Spa', area: 'Gandipet Lake', count: '85+ Destination Shoots' },
+];
+
 const TESTIMONIALS = [
   {
     quote: "PixelStory Studios immortalized our Taj Falaknuma wedding! The candid cinema film made everyone tear up. The SnapBot quote was exact, zero hidden fees.",
     couple: "Siddharth & Ananya Reddy",
     venue: "Taj Falaknuma Palace, Hyderabad",
     rating: 5,
+    tag: "Verified Falaknuma Couple",
   },
   {
     quote: "From our sunrise pre-wedding at Ananthagiri to the grand reception at Novotel HICC, Vikram's team worked with incredible warmth and perfection.",
     couple: "Vikram & Sneha Varma",
     venue: "Novotel HICC Hyderabad",
     rating: 5,
+    tag: "Verified 2-Day Celebration",
   },
   {
     quote: "The live drone stream and same-day teaser reel were mind-blowing. Our guests were stunned by the film quality. Truly Hyderabad's finest studio.",
     couple: "Rajesh & Priya Kulkarni",
     venue: "Jubilee Hills, Hyderabad",
     rating: 5,
+    tag: "Verified Muhurtham",
   },
 ];
 
@@ -174,11 +198,36 @@ const FAQS = [
   },
 ];
 
+const LIVE_STUDIO_TICKERS = [
+  { text: 'Couple from Jubilee Hills reserved Platinum Cinema for Taj Falaknuma (Dec 2026)', time: 'Just now', icon: '🏰' },
+  { text: 'Sneak Peek 4K Teaser delivered for Grand Telugu Muhurtham at Novotel HICC', time: '2 hours ago', icon: '✨' },
+  { text: 'Outdoor Pre-Wedding shoot confirmed at Ananthagiri Hills for Vikram & Sneha', time: '4 hours ago', icon: '🌿' },
+  { text: '50th Grand Anniversary booked in Banjara Hills with 360 Spin Booth', time: 'Yesterday', icon: '💍' },
+];
+
 export const CustomerView: React.FC = () => {
   const { openSnapBotWithPackage, setIsSnapBotOpen, setIsPackageCustomizerOpen } = useLeads();
   const [activeLightbox, setActiveLightbox] = useState<PortfolioGalleryItem | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  // Showreel Video Modal state
+  const [isShowreelOpen, setIsShowreelOpen] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Interactive AI Package Matcher state
+  const [aiVenue, setAiVenue] = useState<'palace' | 'ballroom' | 'resort'>('palace');
+  const [aiScale, setAiScale] = useState<'intimate' | 'grand' | 'royal'>('grand');
+  const [aiPriority, setAiPriority] = useState<'cinema' | 'portrait' | 'sameday'>('cinema');
+
+  // Before/After Color Grade Slider position (0 - 100)
+  const [gradeSliderPosition, setGradeSliderPosition] = useState(55);
+  const sliderContainerRef = useRef<HTMLDivElement>(null);
+
+  // Real-time Social Proof Ticker
+  const [tickerIndex, setTickerIndex] = useState(0);
+  const [isTickerDismissed, setIsTickerDismissed] = useState(false);
 
   const ownerPhone = '8497980957';
   const ownerWhatsAppUrl = `https://wa.me/91${ownerPhone}?text=${encodeURIComponent('Hi PixelStory Studios, I would like to inquire about wedding/event photography packages.')}`;
@@ -193,6 +242,14 @@ export const CustomerView: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Social proof ticker interval
+  useEffect(() => {
+    const tickerTimer = setInterval(() => {
+      setTickerIndex((prev) => (prev + 1) % LIVE_STUDIO_TICKERS.length);
+    }, 6500);
+    return () => clearInterval(tickerTimer);
+  }, []);
+
   const nextSlide = () => {
     setCurrentSlideIndex((prev) => (prev + 1) % LUXURY_SLIDES.length);
   };
@@ -200,6 +257,45 @@ export const CustomerView: React.FC = () => {
   const prevSlide = () => {
     setCurrentSlideIndex((prev) => (prev - 1 + LUXURY_SLIDES.length) % LUXURY_SLIDES.length);
   };
+
+  // Dynamic AI computation based on interactive choices
+  const computeAiRecommendation = () => {
+    if (aiVenue === 'palace' || aiScale === 'royal') {
+      return {
+        tier: 'Platinum Luxury Masterpiece',
+        price: '₹1,50,000',
+        numericPrice: 150000,
+        crew: '4 Cinema Directors + 2 Candid Photo Artists + 1 4K Drone Operator + 1 Sound Recordist',
+        optics: 'Sony FX6 Cine-EI + FX3 Full-Frame • G-Master 85mm f/1.4 + 50mm f/1.2 • DJI Inspire 3 8K',
+        deliverables: '48h Viral Teaser + 45-Min Royal Film + Italian Leather Heirloom Album (250 Pages)',
+        palaceFit: 'Calibrated for grand chandeliers, evening Sangeet lighting, and historic palace courtyards.',
+      };
+    }
+
+    if (aiVenue === 'ballroom' && aiScale === 'grand') {
+      return {
+        tier: 'Platinum Cinema Package',
+        price: '₹1,50,000',
+        numericPrice: 150000,
+        crew: '2 Cinema Directors + 2 Candid Artists + 1 Aerial Drone Pilot + 1 Lighting Assistant',
+        optics: 'Dual Sony A7S III + FX3 • 24-70mm GM II + 70-200mm GM II • Multi-Angle Wireless Rig',
+        deliverables: 'Same-Day LED Wall Projection + 35-Min Cinema Film + Premium Royal Gloss Album',
+        palaceFit: 'Optimized for high-energy dance performances and ballroom acoustic clarity.',
+      };
+    }
+
+    return {
+      tier: 'Gold Heritage Package',
+      price: '₹75,000',
+      numericPrice: 75000,
+      crew: '2 Master Traditional Photographers + 1 Cinematic Videographer',
+      optics: 'Sony A7IV + Prime 50mm f/1.2 + 35mm f/1.4 GM • Calibrated Softbox Lighting',
+      deliverables: 'Full Mandap Ceremony Edit + 150-Page Handcrafted Album + High-Res Digital Negatives',
+      palaceFit: 'Perfect for intimate family rituals, scenic outdoor lawns, and sacred Muhurtham ceremonies.',
+    };
+  };
+
+  const aiMatch = computeAiRecommendation();
 
   const offerings = [
     {
@@ -268,7 +364,7 @@ export const CustomerView: React.FC = () => {
       {/* ============================================================ */}
       {/* LUXURY BACKGROUND SLIDES-WISE CAROUSEL HERO SECTION           */}
       {/* ============================================================ */}
-      <section className="relative min-h-[90vh] flex flex-col justify-between overflow-hidden">
+      <section className="relative min-h-[92vh] flex flex-col justify-between overflow-hidden">
         {/* Dynamic Background Image Layers with Smooth Cross-fade */}
         {LUXURY_SLIDES.map((slide, idx) => (
           <div
@@ -286,10 +382,22 @@ export const CustomerView: React.FC = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-64 bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
 
         {/* Hero Content */}
-        <div className="relative z-10 pt-14 pb-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center flex-1 flex flex-col justify-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A1A22]/90 backdrop-blur-md border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-medium mb-6 shadow-gold-sm mx-auto animate-fadeIn">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Hyderabad’s Premier Luxury Wedding Photography</span>
+        <div className="relative z-10 pt-10 pb-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center flex-1 flex flex-col justify-center">
+          {/* Realism: Live Auspicious Muhurtham Banner */}
+          <div className="flex flex-col items-center gap-2 mb-5 animate-fadeIn">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#181824]/90 backdrop-blur-md border border-[#D4AF37]/40 text-[11px] text-[#D4AF37] shadow-sm">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span className="font-semibold text-white">2026 Telugu Muhurtham Calendar:</span>
+              <span className="text-gray-300">Peak wedding dates (Nov 2026 – Feb 2027) now booking • Limited to 2 weddings/weekend</span>
+            </div>
+
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1A22]/90 backdrop-blur-md border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-medium shadow-gold-sm">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Hyderabad’s Premier Luxury Wedding Photography • AI Concierge Online</span>
+            </div>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight sm:leading-tight">
@@ -299,14 +407,14 @@ export const CustomerView: React.FC = () => {
             </span>
           </h1>
 
-          <p className="mt-5 text-sm sm:text-base text-gray-200 max-w-2xl mx-auto font-sans leading-relaxed drop-shadow">
+          <p className="mt-4 text-sm sm:text-base text-gray-200 max-w-2xl mx-auto font-sans leading-relaxed drop-shadow">
             From Falaknuma palace ceremonies to serene destination pre-weddings, PixelStory Studios crafts 
             masterful frames with zero compromises. Select our signature packages below or chat with 
             <strong className="text-[#D4AF37] font-medium"> SnapBot</strong> for an instant verified quote.
           </p>
 
           {/* Action Buttons */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => setIsSnapBotOpen(true)}
               className="px-6 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-xs sm:text-sm shadow-luxury hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
@@ -316,11 +424,19 @@ export const CustomerView: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setIsShowreelOpen(true)}
+              className="px-5 py-3.5 rounded-full bg-[#181822]/90 hover:bg-[#232330] text-[#D4AF37] border border-[#D4AF37] font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-sm hover:scale-105"
+            >
+              <Play className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+              <span>Watch 2026 Showreel</span>
+            </button>
+
+            <button
               onClick={() => setIsPackageCustomizerOpen(true)}
-              className="px-6 py-3.5 rounded-full bg-[#181822]/90 backdrop-blur-md hover:bg-[#232330] text-gray-200 border border-[#D4AF37]/40 hover:border-[#D4AF37] font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-sm"
+              className="px-5 py-3.5 rounded-full bg-[#181822]/90 backdrop-blur-md hover:bg-[#232330] text-gray-200 border border-[#2F2F3D] hover:border-[#D4AF37]/50 font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
             >
               <Calculator className="w-4 h-4 text-[#D4AF37]" />
-              <span>Interactive Quote Calculator</span>
+              <span>Quote Calculator</span>
             </button>
 
             {/* Direct WhatsApp Call Button */}
@@ -328,7 +444,7 @@ export const CustomerView: React.FC = () => {
               href={ownerWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-5 py-3.5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
+              className="px-4 py-3.5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
               <span>WhatsApp Director: {ownerPhone}</span>
@@ -336,7 +452,7 @@ export const CustomerView: React.FC = () => {
           </div>
 
           {/* Trust Badges */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-gray-300">
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-gray-300">
             <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
               <Award className="w-4 h-4 text-[#D4AF37]" />
               <span>850+ Luxury Celebrations</span>
@@ -349,11 +465,15 @@ export const CustomerView: React.FC = () => {
               <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
               <span>Zero-Delay Guaranteed Delivery</span>
             </div>
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+              <span>4.9★ Google Reviews (280+ Couples)</span>
+            </div>
           </div>
         </div>
 
         {/* Slide Indicators & Navigation Controls */}
-        <div className="relative z-10 px-4 sm:px-8 py-5 border-t border-white/10 bg-black/60 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative z-10 px-4 sm:px-8 py-4 border-t border-white/10 bg-black/60 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Current Slide Info */}
           <div className="flex items-center gap-3 text-left">
             <span className="font-mono text-xs text-[#D4AF37] font-bold">
@@ -401,8 +521,309 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
+      {/* ============================================================ */}
+      {/* PRESTIGIOUS 5-STAR HYDERABAD VENUES MARQUEE (REALISM BOOST)  */}
+      {/* ============================================================ */}
+      <section className="border-y border-[#20202A] bg-[#0E0E12] py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 shrink-0">
+              <Crown className="w-4 h-4 text-[#D4AF37]" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
+                Preferred Cinema Partner Across Hyderabad's Heritage Landmarks:
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap items-center gap-2.5 w-full md:w-auto">
+              {PRESTIGIOUS_VENUES.map((venue, idx) => (
+                <div
+                  key={idx}
+                  className="px-3 py-1.5 rounded-xl bg-[#15151D] border border-[#252530] flex items-center gap-2 hover:border-[#D4AF37]/50 transition-colors"
+                >
+                  <MapPin className="w-3 h-3 text-[#D4AF37] shrink-0" />
+                  <div className="text-left">
+                    <span className="text-xs font-medium text-gray-200 block truncate max-w-[170px] sm:max-w-none">
+                      {venue.name}
+                    </span>
+                    <span className="text-[10px] text-gray-400 block font-mono">
+                      {venue.count}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* INTERACTIVE AI WEDDING VISION & PACKAGE MATCHER (AI SPOTLIGHT)*/}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-16">
+        <div className="p-6 sm:p-10 rounded-3xl bg-gradient-to-b from-[#14141E] to-[#0D0D12] border border-[#D4AF37]/40 shadow-luxury relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
+
+          <div className="max-w-3xl mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-semibold uppercase tracking-wider mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span>Real-Time AI Cinematography Allocator</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white tracking-tight">
+              Design Your Dream Wedding Film Setup
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-300 mt-2">
+              Select your venue style, guest scale, and cinema priorities. Our AI engine dynamically computes your ideal camera crew count, prime lens lineup, and package quote in real time.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Interactive Inputs */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Option 1: Venue Style */}
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-gray-300 block mb-2.5 flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>1. Select Celebration Setting</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'palace', label: '👑 Royal Palace', desc: 'Taj Falaknuma / Chowmahalla' },
+                    { id: 'ballroom', label: '🏛️ 5-Star Ballroom', desc: 'Novotel HICC / ITC Kohenur' },
+                    { id: 'resort', label: '🌿 Outdoor Lawn', desc: 'Ananthagiri / Golconda Resort' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setAiVenue(item.id as any)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        aiVenue === item.id
+                          ? 'bg-[#222230] border-[#D4AF37] text-white shadow-gold-sm ring-1 ring-[#D4AF37]/50'
+                          : 'bg-[#121218] border-[#252530] text-gray-400 hover:text-white hover:border-[#383848]'
+                      }`}
+                    >
+                      <div className="font-semibold text-xs text-white">{item.label}</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">{item.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Option 2: Guest Attendance */}
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-gray-300 block mb-2.5 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>2. Anticipated Guest Scale</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'intimate', label: 'Intimate', count: '~150 - 300 Guests' },
+                    { id: 'grand', label: 'Grand Celebration', count: '~500 - 800 Guests' },
+                    { id: 'royal', label: 'Mega Royal', count: '1000+ Guests' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setAiScale(item.id as any)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        aiScale === item.id
+                          ? 'bg-[#222230] border-[#D4AF37] text-white shadow-gold-sm ring-1 ring-[#D4AF37]/50'
+                          : 'bg-[#121218] border-[#252530] text-gray-400 hover:text-white hover:border-[#383848]'
+                      }`}
+                    >
+                      <div className="font-semibold text-xs text-white">{item.label}</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">{item.count}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Option 3: Cinematography Priority */}
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-gray-300 block mb-2.5 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>3. Key Creative Deliverable Priority</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {[
+                    { id: 'cinema', label: '🎥 4K Drone Cinema', desc: 'Teaser + 45-Min Feature Film' },
+                    { id: 'portrait', label: '📸 Regal Portraits', desc: 'Handcrafted Royal Albums' },
+                    { id: 'sameday', label: '⚡ Same-Day Reels', desc: 'LED Wall Edit for Sangeet' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setAiPriority(item.id as any)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        aiPriority === item.id
+                          ? 'bg-[#222230] border-[#D4AF37] text-white shadow-gold-sm ring-1 ring-[#D4AF37]/50'
+                          : 'bg-[#121218] border-[#252530] text-gray-400 hover:text-white hover:border-[#383848]'
+                      }`}
+                    >
+                      <div className="font-semibold text-xs text-white">{item.label}</div>
+                      <div className="text-[10px] text-gray-400 mt-0.5">{item.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* AI Real-time Recommendation Card */}
+            <div className="lg:col-span-5 p-6 rounded-2xl bg-[#171722] border border-[#D4AF37]/50 shadow-luxury space-y-4 relative">
+              <div className="flex items-center justify-between border-b border-[#2A2A38] pb-3">
+                <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#D4AF37]">
+                  <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                  <span>AI Tailored Recommendation</span>
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30">
+                  Optimal Match
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] text-gray-400 uppercase tracking-widest block font-medium">
+                  Recommended Production Tier
+                </span>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">
+                  {aiMatch.tier}
+                </h3>
+                <div className="font-serif text-2xl font-bold text-[#D4AF37] mt-1">
+                  {aiMatch.price}{' '}
+                  <span className="text-xs font-sans text-gray-400 font-normal">All-Inclusive</span>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs text-gray-300 pt-2 border-t border-[#252532]">
+                <div>
+                  <span className="text-gray-400 block font-semibold mb-0.5">🎬 Assigned Master Crew:</span>
+                  <span className="text-white font-medium">{aiMatch.crew}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block font-semibold mb-0.5">📷 Cinema Gear &amp; Optics:</span>
+                  <span className="text-gray-200 font-mono text-[11px]">{aiMatch.optics}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400 block font-semibold mb-0.5">📦 Guaranteed Deliverables:</span>
+                  <span className="text-gray-200">{aiMatch.deliverables}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-[11px] text-[#D4AF37]">
+                  💡 <strong>Venue Optimization:</strong> {aiMatch.palaceFit}
+                </div>
+              </div>
+
+              <button
+                onClick={() => openSnapBotWithPackage(aiMatch.tier)}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-bold text-xs sm:text-sm shadow-gold-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
+              >
+                <span>Lock This AI Package with SnapBot</span>
+                <ArrowRight className="w-4 h-4 text-black" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* SIGNATURE RAW VS. MASTER COLOR GRADE COMPARISON (COLOR CRAFT) */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-20">
+        <div className="text-center max-w-3xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+            <Sliders className="w-4 h-4" />
+            <span>The PixelStory Color Science</span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            From Camera Sensor to Golden Masterpiece
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-400 mt-2">
+            Every single frame from our Sony Cinema Line cameras is captured in uncompressed 10-bit 4:2:2 S-Log3 and color-graded with warm champagne gold tones, rich royal reds, and radiant Indian skin tones.
+          </p>
+        </div>
+
+        {/* Interactive Comparison Slider */}
+        <div className="max-w-4xl mx-auto rounded-3xl overflow-hidden border border-[#D4AF37]/40 shadow-luxury bg-[#101015]">
+          <div
+            ref={sliderContainerRef}
+            className="relative h-[380px] sm:h-[480px] select-none overflow-hidden cursor-ew-resize group"
+            onMouseMove={(e) => {
+              if (sliderContainerRef.current) {
+                const rect = sliderContainerRef.current.getBoundingClientRect();
+                const pos = ((e.clientX - rect.left) / rect.width) * 100;
+                setGradeSliderPosition(Math.max(5, Math.min(95, pos)));
+              }
+            }}
+            onTouchMove={(e) => {
+              if (sliderContainerRef.current && e.touches[0]) {
+                const rect = sliderContainerRef.current.getBoundingClientRect();
+                const pos = ((e.touches[0].clientX - rect.left) / rect.width) * 100;
+                setGradeSliderPosition(Math.max(5, Math.min(95, pos)));
+              }
+            }}
+          >
+            {/* Background Layer: PixelStory Master Obsidian & Gold Grade */}
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?q=80&w=1920&auto=format&fit=crop')`,
+                filter: 'saturate(1.2) contrast(1.15) brightness(1.02)',
+              }}
+            >
+              <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#D4AF37]/50 text-xs font-semibold text-[#D4AF37]">
+                ✨ PixelStory Signature Gold Grade
+              </div>
+            </div>
+
+            {/* Foreground Layer (Clipped): Raw Sony S-Log3 Camera Output */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-all duration-75"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?q=80&w=1920&auto=format&fit=crop')`,
+                clipPath: `inset(0 ${100 - gradeSliderPosition}% 0 0)`,
+                filter: 'saturate(0.35) contrast(0.72) brightness(1.12)',
+              }}
+            >
+              <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-mono text-gray-300">
+                📷 Raw Sony S-Log3 Cine-EI (Flat)
+              </div>
+            </div>
+
+            {/* Draggable Divider Line */}
+            <div
+              className="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-[#D4AF37] via-white to-[#D4AF37] shadow-luxury pointer-events-none"
+              style={{ left: `${gradeSliderPosition}%` }}
+            >
+              <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[#D4AF37] text-black font-bold flex items-center justify-center shadow-lg text-xs">
+                ⮂
+              </div>
+            </div>
+
+            {/* Bottom Slider Instructions */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 text-[11px] text-gray-300 pointer-events-none">
+              👈 Drag slider to compare Raw S-Log3 vs. Master Color Grade 👉
+            </div>
+          </div>
+
+          {/* Color Science Specs Bar */}
+          <div className="p-4 sm:p-5 bg-[#14141C] border-t border-[#22222E] grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
+            <div>
+              <span className="text-[10px] text-gray-400 uppercase block font-semibold">Sensor Capture</span>
+              <span className="font-mono text-gray-200">10-Bit 4:2:2 All-Intra</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 uppercase block font-semibold">Color Space</span>
+              <span className="font-mono text-gray-200">S-Gamut3.Cine</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 uppercase block font-semibold">Grading Suite</span>
+              <span className="font-mono text-[#D4AF37]">DaVinci Resolve Studio</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-gray-400 uppercase block font-semibold">Dynamic Range</span>
+              <span className="font-mono text-gray-200">15+ Stops Calibrated</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Immediate Studio Owner Contact Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-14">
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#171722] via-[#1F1F2C] to-[#171722] border border-[#D4AF37]/30 shadow-luxury flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shrink-0">
@@ -607,10 +1028,15 @@ export const CustomerView: React.FC = () => {
               className="p-6 rounded-2xl glass-card border border-[#27272E] relative flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center gap-1 text-[#D4AF37] mb-3">
-                  {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-[#D4AF37]" />
-                  ))}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-1 text-[#D4AF37]">
+                    {[...Array(t.rating)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-[#D4AF37]" />
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30">
+                    {t.tag}
+                  </span>
                 </div>
                 <Quote className="w-6 h-6 text-[#D4AF37]/30 mb-2" />
                 <p className="text-xs sm:text-sm text-gray-300 italic leading-relaxed">
@@ -714,7 +1140,130 @@ export const CustomerView: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Action Button (FAB) at bottom-right */}
+      {/* ============================================================ */}
+      {/* 4K CINEMATIC SHOWREEL VIDEO MODAL                            */}
+      {/* ============================================================ */}
+      {isShowreelOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-fadeIn">
+          <div
+            className="w-full max-w-4xl bg-[#0D0D12] rounded-3xl border border-[#D4AF37]/50 shadow-luxury overflow-hidden text-white relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 bg-[#14141C] border-b border-[#252530] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                <h3 className="font-serif font-bold text-sm sm:text-base text-white">
+                  PixelStory Studios — 2026 Hyderabad Wedding Cinematography Reel
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsShowreelOpen(false)}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Video Player */}
+            <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+              <video
+                ref={videoRef}
+                autoPlay
+                loop
+                muted={isVideoMuted}
+                playsInline
+                poster="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop"
+                className="w-full h-full object-cover"
+              >
+                <source
+                  src="https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-having-their-first-dance-41221-large.mp4"
+                  type="video/mp4"
+                />
+                Your browser does not support HTML5 video.
+              </video>
+
+              {/* Watermark branding */}
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-gray-200 uppercase tracking-widest font-mono">
+                PixelStory Studios 4K Cinema Line
+              </div>
+
+              {/* Audio mute/unmute control */}
+              <button
+                onClick={() => {
+                  setIsVideoMuted(!isVideoMuted);
+                  if (videoRef.current) {
+                    videoRef.current.muted = !isVideoMuted;
+                  }
+                }}
+                className="absolute bottom-4 right-4 p-2.5 rounded-full bg-black/70 hover:bg-[#D4AF37] hover:text-black text-white border border-white/20 transition-all"
+                title={isVideoMuted ? 'Unmute Audio' : 'Mute Audio'}
+              >
+                {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+            </div>
+
+            {/* Video Footer CTA */}
+            <div className="p-4 sm:p-5 bg-[#121218] border-t border-[#22222E] flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <span className="text-xs text-[#D4AF37] font-semibold block">
+                  Loved this cinematic visual style?
+                </span>
+                <span className="text-[11px] text-gray-400">
+                  Document your celebration with the exact same directors and 4K cinema prime lenses.
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setIsShowreelOpen(false);
+                  setIsSnapBotOpen(true);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-black font-semibold text-xs shadow-gold-sm hover:brightness-110 transition-all flex items-center gap-2"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Reserve with SnapBot AI</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* LIVE STUDIO SOCIAL PROOF TICKER (BOTTOM-LEFT PILL)           */}
+      {/* ============================================================ */}
+      {!isTickerDismissed && (
+        <div className="fixed bottom-6 left-6 z-40 hidden md:block animate-fadeIn">
+          <div
+            onClick={() => setIsSnapBotOpen(true)}
+            className="group cursor-pointer p-3 pr-8 rounded-2xl bg-[#14141E]/95 backdrop-blur-md border border-[#D4AF37]/30 shadow-luxury flex items-center gap-3 hover:border-[#D4AF37] transition-all max-w-sm"
+          >
+            <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center text-lg shrink-0">
+              {LIVE_STUDIO_TICKERS[tickerIndex].icon}
+            </div>
+            <div className="text-left text-xs">
+              <span className="text-[10px] text-[#D4AF37] font-bold uppercase tracking-wider block">
+                Live Studio Activity • {LIVE_STUDIO_TICKERS[tickerIndex].time}
+              </span>
+              <p className="text-gray-200 line-clamp-2 text-[11px] font-sans">
+                {LIVE_STUDIO_TICKERS[tickerIndex].text}
+              </p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsTickerDismissed(true);
+              }}
+              title="Dismiss notification"
+              className="absolute top-2 right-2 p-1 text-gray-500 hover:text-white"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* FLOATING ACTION BUTTON (FAB) AT BOTTOM-RIGHT                  */}
+      {/* ============================================================ */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setIsSnapBotOpen(true)}

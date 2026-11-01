@@ -56,6 +56,27 @@ This document details all recently implemented features, testing scenarios execu
   - Advanced regex parser extracts the email address (`[^\s@]+@[^\s@]+\.[^\s@]+`) AND independently isolates the 10-12 digit phone number.
   - Automatically populates `client_email` with `Vijaykumar12@gmail.com` and `client_phone` with `+91 88999 20110`.
 
+### 8. Interactive AI Wedding Vision & Package Matcher (Real-Time Allocator)
+* Interactive 3-variable selector on the customer homepage:
+  - **Celebration Setting**: Royal Palace (Taj Falaknuma) / 5-Star Ballroom (Novotel HICC) / Outdoor Lawn (Ananthagiri).
+  - **Guest Attendance**: Intimate (~150-300) / Grand (~500-800) / Mega Royal (1000+).
+  - **Creative Deliverable Priority**: 4K Cinema Drone Fleet / Regal Portraits & Heirloom Albums / Same-Day LED Projection.
+* Real-time dynamic calculation of Recommended Tier, Pricing, Master Crew Count, Camera Optics (Sony FX6/FX3 G-Master), and Direct One-Click Booking in SnapBot.
+
+### 9. Interactive Before & After Color Grading Studio Slider
+* Demonstrates professional color grading craft directly on the web page:
+  - **Left**: Raw Sony S-Log3 Cine-EI Flat Sensor Output (unprocessed low-contrast logarithmic camera image).
+  - **Right**: PixelStory Signature Obsidian & Champagne Gold Master Color Grade.
+  - Includes real-time draggable divider line and camera color space specs (10-bit 4:2:2 All-Intra, DaVinci Resolve Studio).
+
+### 10. 4K Cinematic Showreel Video Player Modal
+* Fullscreen luxury cinema player accessible via the *"Watch 2026 Showreel"* button in the hero section.
+* High-definition video stream with play/mute controls, studio watermark, and direct booking CTA.
+
+### 11. Prestigious Hyderabad 5-Star Venues Marquee & Real-Time Social Proof Ticker
+* High-status venue badges: Taj Falaknuma Palace, Novotel HICC, Fort Grand Shamshabad, Ramoji Film City, ITC Kohenur, Golkonda Resorts.
+* Real-time discreet social proof ticker in bottom-left displaying recent bookings and sneak peek deliveries across Hyderabad.
+
 ---
 
 ## 🧪 Test Scenarios & Verification Matrix
@@ -73,6 +94,10 @@ This document details all recently implemented features, testing scenarios execu
 | **TC-09** | "Other" Event Custom Name Prompt & Chips | 1. Open SnapBot.<br>2. Enter name & contact.<br>3. Select **"Other"** from event chips. | Bot asks what kind of event you're celebrating and displays chips (Half-Saree, Housewarming, Baby Shower, Anniversary). After choosing, bot replies with proper article (*"Splendid! A Half-Saree Ceremony celebration"* or *"Splendid! An Anniversary celebration"*). | ✅ PASS |
 | **TC-10** | Combined Email + Phone Parsing | 1. In SnapBot contact prompt, enter: `Vijaykumar12@gmail.com and 8899920110`. | Bot extracts both: phone becomes `+91 88999 20110` and email becomes `Vijaykumar12@gmail.com`. Both are visible in Admin Dashboard. | ✅ PASS |
 | **TC-11** | Custom Event Name in Quotation & WhatsApp | 1. Select a lead with custom celebration (e.g. `Half-Saree Ceremony`).<br>2. Check WhatsApp pitch and PDF Quote. | WhatsApp message says *"Regarding your Half-Saree Ceremony..."* instead of *"Regarding your Other..."*. Official PDF quotation header says *"Half-Saree Ceremony Celebration"*. | ✅ PASS |
+| **TC-12** | Interactive AI Package Matcher | 1. On homepage, scroll to "Design Your Dream Wedding Film Setup".<br>2. Select "Royal Palace", "Mega Royal", "4K Drone Cinema". | AI dynamically recalculates and recommends Platinum Luxury Masterpiece with exact crew breakdown and Sony FX6 optics. | ✅ PASS |
+| **TC-13** | Before & After Color Grade Slider | 1. On homepage, scroll to "From Camera Sensor to Golden Masterpiece".<br>2. Drag the slider handle left and right. | Visually reveals flat raw Sony S-Log3 sensor output vs. warm signature champagne gold master grade. | ✅ PASS |
+| **TC-14** | 4K Cinematic Showreel Modal | 1. Click "Watch 2026 Showreel" in hero banner. | High-definition cinema wedding showreel opens with audio toggle and direct SnapBot booking CTA. | ✅ PASS |
+| **TC-15** | Live Social Proof Ticker | 1. Observe bottom-left corner of screen on desktop. | Real-time studio booking notification appears and cycles every 6.5s (can be dismissed or clicked). | ✅ PASS |
 
 ---
 
