@@ -213,8 +213,7 @@ export const CustomerView: React.FC = () => {
 
   // Showreel Video Modal state
   const [isShowreelOpen, setIsShowreelOpen] = useState(false);
-  const [isVideoMuted, setIsVideoMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [selectedShowreelId, setSelectedShowreelId] = useState('bO_9nZyIolM');
 
   // Interactive AI Package Matcher state
   const [aiVenue, setAiVenue] = useState<'palace' | 'ballroom' | 'resort'>('palace');
@@ -1144,14 +1143,21 @@ export const CustomerView: React.FC = () => {
       {/* 4K CINEMATIC SHOWREEL VIDEO MODAL                            */}
       {/* ============================================================ */}
       {isShowreelOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-fadeIn">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/95 backdrop-blur-xl animate-fadeIn"
+          onClick={() => setIsShowreelOpen(false)}
+        >
           <div
-            className="w-full max-w-4xl bg-[#0D0D12] rounded-3xl border border-[#D4AF37]/50 shadow-luxury overflow-hidden text-white relative"
+            className="w-full max-w-4xl bg-[#0D0D12] rounded-3xl border border-[#D4AF37]/50 shadow-luxury overflow-hidden text-white relative flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Modal Header */}
             <div className="p-4 bg-[#14141C] border-b border-[#252530] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Play className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-2.5 w-2.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                </span>
                 <h3 className="font-serif font-bold text-sm sm:text-base text-white">
                   PixelStory Studios — 2026 Hyderabad Wedding Cinematography Reel
                 </h3>
@@ -1164,52 +1170,55 @@ export const CustomerView: React.FC = () => {
               </button>
             </div>
 
-            {/* Video Player */}
-            <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
-              <video
-                ref={videoRef}
-                autoPlay
-                loop
-                muted={isVideoMuted}
-                playsInline
-                poster="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop"
-                className="w-full h-full object-cover"
-              >
-                <source
-                  src="https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-having-their-first-dance-41221-large.mp4"
-                  type="video/mp4"
-                />
-                Your browser does not support HTML5 video.
-              </video>
+            {/* Video Player (Responsive 16:9 High-Def Video Stream) */}
+            <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
+              <iframe
+                key={selectedShowreelId}
+                className="w-full h-full border-0"
+                src={`https://www.youtube-nocookie.com/embed/${selectedShowreelId}?autoplay=1&mute=0&controls=1&rel=0&modestbranding=1&playsinline=1`}
+                title="PixelStory Studios 4K Wedding Cinematography Reel"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
 
-              {/* Watermark branding */}
-              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 text-[10px] text-gray-200 uppercase tracking-widest font-mono">
-                PixelStory Studios 4K Cinema Line
+            {/* Showreel Selector Tabs */}
+            <div className="px-4 py-2.5 bg-[#101018] border-t border-[#22222E] flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-[#D4AF37] font-semibold uppercase tracking-wider">
+                  Showcase Reels:
+                </span>
+                <button
+                  onClick={() => setSelectedShowreelId('bO_9nZyIolM')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    selectedShowreelId === 'bO_9nZyIolM'
+                      ? 'bg-[#D4AF37] text-black font-semibold shadow-gold-sm'
+                      : 'bg-[#1C1C26] text-gray-300 hover:text-white border border-[#2F2F3E]'
+                  }`}
+                >
+                  🏰 Taj Falaknuma Royal Teaser
+                </button>
+                <button
+                  onClick={() => setSelectedShowreelId('9No-FiEInLA')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    selectedShowreelId === '9No-FiEInLA'
+                      ? 'bg-[#D4AF37] text-black font-semibold shadow-gold-sm'
+                      : 'bg-[#1C1C26] text-gray-300 hover:text-white border border-[#2F2F3E]'
+                  }`}
+                >
+                  ✨ Telugu Grand Muhurtham Cinema
+                </button>
               </div>
-
-              {/* Audio mute/unmute control */}
-              <button
-                onClick={() => {
-                  setIsVideoMuted(!isVideoMuted);
-                  if (videoRef.current) {
-                    videoRef.current.muted = !isVideoMuted;
-                  }
-                }}
-                className="absolute bottom-4 right-4 p-2.5 rounded-full bg-black/70 hover:bg-[#D4AF37] hover:text-black text-white border border-white/20 transition-all"
-                title={isVideoMuted ? 'Unmute Audio' : 'Mute Audio'}
-              >
-                {isVideoMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </button>
             </div>
 
             {/* Video Footer CTA */}
-            <div className="p-4 sm:p-5 bg-[#121218] border-t border-[#22222E] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-4 sm:p-5 bg-[#14141C] border-t border-[#22222E] flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
                 <span className="text-xs text-[#D4AF37] font-semibold block">
                   Loved this cinematic visual style?
                 </span>
                 <span className="text-[11px] text-gray-400">
-                  Document your celebration with the exact same directors and 4K cinema prime lenses.
+                  Document your celebration with the exact same directors, Sony Cinema Line bodies, and 4K prime lenses.
                 </span>
               </div>
               <button
