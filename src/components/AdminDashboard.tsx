@@ -20,6 +20,9 @@ import { useLeads } from '../context/LeadContext';
 import { LeadLabel, LeadStatus, EventType } from '../types/lead';
 import { formatINR, calculateBaseQuote, generateWhatsAppPitch, determineLeadLabel, cleanContactInfo } from '../services/leadService';
 import { LeadDrawer } from './LeadDrawer';
+import { SpotlightCard } from './ui/SpotlightCard';
+import { AnimatedCounter } from './ui/AnimatedCounter';
+
 
 export const AdminDashboard: React.FC = () => {
   const {
@@ -259,12 +262,11 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Row */}
+        {/* Stats Row with 21st.dev Spotlight & GSAP Animated Counters */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
-          <div className="p-5 rounded-2xl glass-panel border border-[#27272E] hover:border-[#D4AF37]/40 transition-all shadow-luxury relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+          <SpotlightCard enableTilt={false} className="p-5 rounded-2xl bg-[#14141C]/90 border border-[#27272E] hover:border-[#D4AF37]/50 shadow-luxury relative overflow-hidden group">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider font-cinzel">
                 Total Inquiries
               </span>
               <div className="w-9 h-9 rounded-xl bg-[#1C1C24] border border-[#2C2C38] flex items-center justify-center text-[#D4AF37]">
@@ -272,17 +274,16 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <div className="font-serif text-3xl sm:text-4xl font-bold text-white mb-1">
-              {totalInquiries}
+              <AnimatedCounter value={totalInquiries} />
             </div>
             <p className="text-[11px] text-gray-400">
-              Total rows captured in leads table
+              Total verified rows captured in leads database
             </p>
-          </div>
+          </SpotlightCard>
 
-          <div className="p-5 rounded-2xl glass-panel border border-[#27272E] hover:border-red-500/40 transition-all shadow-luxury relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+          <SpotlightCard enableTilt={false} className="p-5 rounded-2xl bg-[#14141C]/90 border border-[#27272E] hover:border-red-500/50 shadow-luxury relative overflow-hidden group">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider font-cinzel">
                 Premium Weddings Booked
               </span>
               <div className="w-9 h-9 rounded-xl bg-red-950/40 border border-red-500/40 flex items-center justify-center text-red-400">
@@ -290,17 +291,16 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <div className="font-serif text-3xl sm:text-4xl font-bold text-red-400 mb-1">
-              {premiumWeddings}
+              <AnimatedCounter value={premiumWeddings} />
             </div>
             <p className="text-[11px] text-gray-400">
-              Leads labeled <span className="text-red-400 font-semibold">High-Value</span>
+              Leads labeled <span className="text-red-400 font-semibold">High-Value (₹1.5L+)</span>
             </p>
-          </div>
+          </SpotlightCard>
 
-          <div className="p-5 rounded-2xl glass-panel border border-[#D4AF37]/30 hover:border-[#D4AF37] transition-all shadow-luxury relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4AF37]/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
+          <SpotlightCard borderBeam={true} enableTilt={false} className="p-5 rounded-2xl bg-[#14141C]/90 border border-[#D4AF37]/50 shadow-luxury relative overflow-hidden group">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider font-cinzel text-[#D4AF37]">
                 Quote Pipeline Value
               </span>
               <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37]">
@@ -311,9 +311,9 @@ export const AdminDashboard: React.FC = () => {
               {formatINR(quotePipelineValue)}
             </div>
             <p className="text-[11px] text-gray-400">
-              Sum for all <span className="text-emerald-400 font-medium">'New'</span> &amp; <span className="text-purple-400 font-medium">'Contacted'</span> leads
+              Active volume for <span className="text-emerald-400 font-medium">'New'</span> &amp; <span className="text-purple-400 font-medium">'Contacted'</span> leads
             </p>
-          </div>
+          </SpotlightCard>
         </div>
 
         {/* Pipeline Stages Progress Bar */}

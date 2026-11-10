@@ -16,6 +16,8 @@ import { useLeads } from '../context/LeadContext';
 import { checkGuardrails, STRICT_GUARDRAIL_RESPONSE, GUARDRAIL_DEMO_PROMPTS } from '../services/guardrails';
 import { EventType, LeadLabel } from '../types/lead';
 import { determineLeadLabel, calculateBaseQuote, generateWhatsAppPitch, formatINR, cleanContactInfo } from '../services/leadService';
+import { triggerGoldConfetti } from './ui/ConfettiTrigger';
+
 
 interface ChatMessage {
   id: string;
@@ -421,6 +423,9 @@ export const SnapBotModal: React.FC = () => {
           timestamp: new Date(),
         },
       ]);
+
+      // Fire celebratory royal gold confetti on quote generation
+      triggerGoldConfetti();
 
       try {
         const created = await addLead({

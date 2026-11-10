@@ -99,9 +99,9 @@ export const Navbar: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-white group-hover:text-[#D4AF37] transition-colors">
-                  PixelStory <span className="text-[#D4AF37] italic font-normal">Studios</span>
+                  PixelStory <span className="text-gold-shimmer italic font-normal">Studios</span>
                 </span>
-                <span className="hidden md:inline-flex items-center gap-1 text-[10px] uppercase font-semibold tracking-widest px-2 py-0.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30">
+                <span className="hidden md:inline-flex items-center gap-1 font-cinzel text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/40 shadow-sm">
                   <Sparkles className="w-2.5 h-2.5" /> Hyderabad
                 </span>
               </div>

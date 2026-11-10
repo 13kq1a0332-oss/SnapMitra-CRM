@@ -425,19 +425,19 @@ export const CustomerView: React.FC = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
               </span>
-              <span className="font-semibold text-white">2026 Telugu Muhurtham Calendar:</span>
-              <span className="text-gray-300">Peak wedding dates (Nov 2026 – Feb 2027) now booking • Limited to 2 weddings/weekend</span>
+              <span className="font-semibold text-white font-cinzel tracking-wider text-[10px]">2026 Telugu Muhurtham:</span>
+              <span className="text-gray-300">Peak dates (Nov 2026 – Feb 2027) booking • Limited to 2 weddings/weekend</span>
             </div>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1A1A22]/90 backdrop-blur-md border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-medium shadow-gold-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#1A1A22]/90 backdrop-blur-md border border-[#D4AF37]/40 text-[#D4AF37] text-xs font-medium shadow-gold-sm">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Hyderabad’s Premier Luxury Wedding Photography • AI Concierge Online</span>
+              <span className="font-cinzel tracking-widest text-[11px]">Hyderabad’s Premier Luxury Wedding Cinematography</span>
             </div>
           </div>
 
           <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight sm:leading-tight">
             Where Grand Hyderabad Celebrations Become{' '}
-            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#F3E5AB] via-[#D4AF37] to-[#AA7C11]">
+            <span className="italic text-gold-shimmer">
               Immortal Works of Art
             </span>
           </h1>

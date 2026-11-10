@@ -35,3 +35,4 @@ export const InfiniteMarquee: React.FC<InfiniteMarqueeProps> = ({
     </div>
   );
 };
+

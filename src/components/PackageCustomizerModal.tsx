@@ -3,6 +3,8 @@ import { X, Check, Sparkles, ArrowRight, Calculator, ShieldCheck, Film } from 'l
 import { useLeads } from '../context/LeadContext';
 import { EventType } from '../types/lead';
 import { formatINR } from '../services/leadService';
+import { triggerGoldConfetti } from './ui/ConfettiTrigger';
+
 
 interface AddonOption {
   id: string;
@@ -47,6 +49,7 @@ export const PackageCustomizerModal: React.FC = () => {
   };
 
   const handleBookWithCustomQuote = () => {
+    triggerGoldConfetti();
     setIsPackageCustomizerOpen(false);
     openSnapBotWithPackage(`${tier} ${eventType} (Custom Quote: ${formatINR(grandTotal)})`);
   };
