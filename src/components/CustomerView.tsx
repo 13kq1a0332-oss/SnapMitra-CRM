@@ -30,6 +30,8 @@ import {
   Compass,
   Layers,
   Crown,
+  Calendar,
+  CheckCircle2,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
 import { GoldenParticlesCanvas } from './ui/GoldenParticlesCanvas';
@@ -256,6 +258,19 @@ export const CustomerView: React.FC = () => {
   // Real-time Social Proof Ticker
   const [tickerIndex, setTickerIndex] = useState(0);
   const [isTickerDismissed, setIsTickerDismissed] = useState(false);
+
+  // Interactive Muhurtham Slot Checker state
+  const [selectedMuhurthamDate, setSelectedMuhurthamDate] = useState('2026-12-14');
+
+  const MUHURTHAM_DATES = [
+    { date: '2026-11-22', label: 'Nov 22, 2026', title: 'Kartika Masam Muhurtham', slots: 1, status: 'Limited' },
+    { date: '2026-12-14', label: 'Dec 14, 2026', title: 'Margashira Pournami (Peak)', slots: 1, status: '1 Slot Left' },
+    { date: '2026-12-22', label: 'Dec 22, 2026', title: 'Winter Grand Auspicious', slots: 2, status: 'Available' },
+    { date: '2027-01-18', label: 'Jan 18, 2027', title: 'Post-Sankranti Muhurtham', slots: 2, status: 'Available' },
+    { date: '2027-02-08', label: 'Feb 08, 2027', title: 'Magha Masam Royal Union', slots: 1, status: 'High Demand' },
+  ];
+
+  const currentMuhurthamInfo = MUHURTHAM_DATES.find((d) => d.date === selectedMuhurthamDate) || MUHURTHAM_DATES[1];
 
   const ownerPhone = '8497980957';
   const ownerWhatsAppUrl = `https://wa.me/91${ownerPhone}?text=${encodeURIComponent('Hi PixelStory Studios, I would like to inquire about wedding/event photography packages.')}`;
@@ -605,6 +620,86 @@ export const CustomerView: React.FC = () => {
       </section>
 
       {/* ============================================================ */}
+      {/* AUSPICIOUS TELUGU MUHURTHAM SLOT AVAILABILITY CHECKER        */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-14">
+        <SpotlightCard
+          enableTilt={false}
+          borderBeam={true}
+          className="p-6 sm:p-8 bg-gradient-to-r from-[#151520] via-[#1A1A26] to-[#151520] border-[#D4AF37]/50 shadow-luxury"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 text-[#D4AF37] font-cinzel text-[10px] uppercase font-bold tracking-widest mb-3">
+                <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Live 2026–2027 Telugu Muhurtham Calendar</span>
+              </div>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                Verify Auspicious Muhurtham Slot Availability
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 font-sans leading-relaxed">
+                Because Telugu wedding dates have peak regional demand, PixelStory Studios strictly limits bookings to{' '}
+                <strong className="text-[#D4AF37]">2 grand celebrations per weekend</strong> to ensure undivided master attention.
+              </p>
+            </div>
+
+            {/* Live Verification Panel */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-black/60 border border-white/10 flex-1 max-w-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  Select Auspicious Date:
+                </span>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                  {currentMuhurthamInfo.status}
+                </span>
+              </div>
+
+              {/* Date Pills */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {MUHURTHAM_DATES.map((item) => (
+                  <button
+                    key={item.date}
+                    onClick={() => setSelectedMuhurthamDate(item.date)}
+                    className={`px-3 py-2 rounded-xl text-left border transition-all ${
+                      selectedMuhurthamDate === item.date
+                        ? 'bg-[#222232] border-[#D4AF37] text-white shadow-gold-sm ring-1 ring-[#D4AF37]/50'
+                        : 'bg-[#121218] border-[#272733] text-gray-400 hover:text-white hover:border-gray-600'
+                    }`}
+                  >
+                    <span className="font-semibold text-xs text-white block">{item.label}</span>
+                    <span className="text-[9px] text-gray-400 truncate block font-sans">{item.title}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Status Output & CTA */}
+              <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="flex h-2.5 w-2.5 relative shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-gray-200 text-[11px]">
+                    <strong className="text-white font-semibold">{currentMuhurthamInfo.slots} Master Crew Slot</strong> available for {currentMuhurthamInfo.label}
+                  </span>
+                </div>
+
+                <MagneticButton
+                  magneticStrength={0.2}
+                  triggerConfettiOnClick={true}
+                  onClick={() => openSnapBotWithPackage(`Wedding on ${currentMuhurthamInfo.label} (${currentMuhurthamInfo.title})`)}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-bold text-xs shadow-gold-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-black" />
+                  <span>Lock Date with SnapBot</span>
+                </MagneticButton>
+              </div>
+            </div>
+          </div>
+        </SpotlightCard>
+      </section>
+
+      {/* ============================================================ */}
       {/* INTERACTIVE AI WEDDING VISION & PACKAGE MATCHER (AI SPOTLIGHT)*/}
       {/* ============================================================ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-16">
@@ -770,6 +865,66 @@ export const CustomerView: React.FC = () => {
                 <ArrowRight className="w-4 h-4 text-black" />
               </MagneticButton>
             </SpotlightCard>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 4K CINEMATIC SHOWREEL FEATURE BENTO CARD                     */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-16">
+        <div
+          onClick={() => setIsShowreelOpen(true)}
+          className="group cursor-pointer relative rounded-3xl overflow-hidden border border-[#D4AF37]/50 shadow-luxury bg-[#0F0F14]"
+        >
+          <div className="relative h-[280px] sm:h-[400px] w-full overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1920&auto=format&fit=crop"
+              alt="PixelStory Studios 4K Wedding Showreel"
+              className="w-full h-full object-cover object-[center_35%] group-hover:scale-105 transition-transform duration-700 filter brightness-75 group-hover:brightness-90"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0C] via-[#0B0B0C]/40 to-transparent" />
+            
+            {/* Center Pulsing Play Button */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-full bg-[#D4AF37]/30 animate-ping pointer-events-none" />
+                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#FFF0BD] flex items-center justify-center text-black shadow-luxury group-hover:scale-110 transition-transform">
+                  <Play className="w-7 sm:w-8 h-7 sm:h-8 fill-black text-black ml-1" />
+                </div>
+              </div>
+            </div>
+
+            {/* Badges & Film Info */}
+            <div className="absolute top-4 sm:top-6 left-4 sm:left-6 flex flex-wrap gap-2">
+              <span className="px-3 py-1 rounded-full text-xs font-bold font-cinzel tracking-wider bg-black/70 backdrop-blur-md text-[#D4AF37] border border-[#D4AF37]/50 shadow-sm">
+                4K Cinema Line • 10-Bit S-Log3
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-950/80 backdrop-blur-md text-red-300 border border-red-500/40">
+                ● 2026 Director Showreel
+              </span>
+            </div>
+
+            <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <span className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider block mb-1 font-cinzel">
+                  Taj Falaknuma Palace &amp; Novotel HICC
+                </span>
+                <h3 className="font-serif text-2xl sm:text-4xl font-bold text-white group-hover:text-[#D4AF37] transition-colors">
+                  Experience The 2026 Cinematography Showreel
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-300 mt-1 max-w-xl font-sans">
+                  Immerse yourself in our cinematic storytelling, warm golden hour lens flares, and emotional vows captured with Sony Cinema Line bodies.
+                </p>
+              </div>
+
+              <div className="shrink-0">
+                <span className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold text-xs flex items-center gap-2 group-hover:bg-[#D4AF37] group-hover:text-black group-hover:border-[#D4AF37] transition-all">
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Launch 4K Reel Player</span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1023,6 +1178,144 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
+      {/* ============================================================ */}
+      {/* STUDIO PRODUCTION STANDARDS & GEAR SUPERPOWERS BENTO GRID     */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1 font-cinzel">
+            <Award className="w-4 h-4" />
+            <span>The PixelStory Production Standards</span>
+          </div>
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            Engineered for Timeless Perfection
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-300 mt-2 font-sans">
+            Why Hyderabad’s most prominent families entrust their monumental celebrations to our master crew. Zero compromises, zero missed glances.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {/* Bento Item 1: Cinema Line Fleet (Wide, 2 cols) */}
+          <SpotlightCard enableTilt className="p-6 md:col-span-2 flex flex-col justify-between rounded-2xl bg-[#13131A] border-[#D4AF37]/40 shadow-luxury">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30">
+                  Dual Native ISO 800/12800
+                </span>
+                <Film className="w-5 h-5 text-[#D4AF37]" />
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
+                Sony FX6 &amp; FX3 Cinema Line Optics
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                We document your muhurtham rituals using full-frame Sony Cinema Line cameras and G-Master prime glass (50mm f/1.2 &amp; 85mm f/1.4 GM). Delivers unmatched creamy bokeh and crystal-clear low-light performance under candlelight mandaps.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-4 text-xs font-mono text-gray-400">
+              <span>✓ 4K 120fps Slow-Mo</span>
+              <span>✓ 10-Bit S-Log3</span>
+              <span>✓ Uncompressed Raw</span>
+            </div>
+          </SpotlightCard>
+
+          {/* Bento Item 2: Licensed Aerial Drone */}
+          <SpotlightCard enableTilt className="p-6 flex flex-col justify-between rounded-2xl bg-[#13131A] border-white/10 hover:border-[#D4AF37]/50 shadow-luxury">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/15 flex items-center justify-center text-[#D4AF37] mb-4">
+                <Crown className="w-5 h-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-white">
+                Licensed 8K &amp; 4K Drone Fleet
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                DGCA-certified drone pilots authorized for aerial sweeps over Taj Falaknuma, Chowmahalla Palace, and destination hillside vistas.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono text-[#D4AF37] mt-4 block">
+              High-wind dual-stabilizer gimbal
+            </span>
+          </SpotlightCard>
+
+          {/* Bento Item 3: 48-Hour Rapid Sneak Peek */}
+          <SpotlightCard enableTilt className="p-6 flex flex-col justify-between rounded-2xl bg-[#13131A] border-white/10 hover:border-[#D4AF37]/50 shadow-luxury">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-300 mb-4">
+                <Clock className="w-5 h-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-white">
+                48-Hour Rapid Sneak Peek
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                Never wait months to share your happiness. Receive a 4K 60-second teaser reel for Instagram and WhatsApp within 48 hours of your reception.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono text-amber-300 mt-4 block">
+              Viral social media ready edit
+            </span>
+          </SpotlightCard>
+
+          {/* Bento Item 4: Milan Handcrafted Leather Albums (Wide, 2 cols) */}
+          <SpotlightCard enableTilt className="p-6 md:col-span-2 flex flex-col justify-between rounded-2xl bg-[#13131A] border-white/10 hover:border-[#D4AF37]/50 shadow-luxury">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30">
+                  200-Year Archival Guarantee
+                </span>
+                <Camera className="w-5 h-5 text-[#D4AF37]" />
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
+                Handcrafted Royal Italian Leather Albums
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                Flush-mount, seamless lay-flat albums printed on museum-grade fine art photographic paper. Handcrafted in Milan with genuine Italian Nappa leather covers and embossed 24K gold foil calligraphy.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-white/10 flex items-center gap-4 text-xs font-mono text-gray-400">
+              <span>✓ 250 Royal Pages</span>
+              <span>✓ Scratch-Resistant Matte Silk</span>
+              <span>✓ Heirloom Wooden Chest</span>
+            </div>
+          </SpotlightCard>
+
+          {/* Bento Item 5: 32-Bit Float Sound */}
+          <SpotlightCard enableTilt className="p-6 flex flex-col justify-between rounded-2xl bg-[#13131A] border-white/10 hover:border-[#D4AF37]/50 shadow-luxury">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center text-purple-300 mb-4">
+                <Volume2 className="w-5 h-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-white">
+                32-Bit Float Audio Engineering
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                Discrete Sennheiser micro-lavaliers on the bride, groom, and priest ensure sacred Vedic mantras and emotional vows are captured with absolute acoustic perfection. Zero distortion.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono text-purple-300 mt-4 block">
+              Multi-channel discrete recording
+            </span>
+          </SpotlightCard>
+
+          {/* Bento Item 6: Zero-Delay Legal Guarantee */}
+          <SpotlightCard enableTilt borderBeam={true} className="p-6 flex flex-col justify-between rounded-2xl bg-[#13131A] border-[#D4AF37]/50 shadow-luxury">
+            <div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-300 mb-4">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-white">
+                Zero-Delay Legal Guarantee
+              </h3>
+              <p className="text-xs sm:text-sm text-gray-300 mt-2 leading-relaxed">
+                We believe in total transparency. Every booking comes with a formal signed contract guaranteeing strict milestone deliveries, or we refund ₹5,000 per day of delay.
+              </p>
+            </div>
+            <span className="text-[11px] font-mono text-emerald-300 mt-4 block">
+              100% On-Time Track Record
+            </span>
+          </SpotlightCard>
+        </div>
+      </section>
+
       {/* Real Hyderabad Weddings Showcase (Featuring 6 High-Res URLs) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-3">
@@ -1164,6 +1457,130 @@ export const CustomerView: React.FC = () => {
           })}
         </div>
       </section>
+
+      {/* ============================================================ */}
+      {/* GRAND EDITORIAL LUXURY FOOTER                                */}
+      {/* ============================================================ */}
+      <footer className="border-t border-[#22222E] bg-[#08080A] pt-16 pb-12 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 mb-14">
+            {/* Column 1: Brand & Bio (5 cols) */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/30 to-black border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] shadow-gold-sm">
+                  <Camera className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-2xl font-bold text-white tracking-tight">
+                    PixelStory <span className="text-gold-shimmer italic font-normal">Studios</span>
+                  </h3>
+                  <span className="font-cinzel text-[10px] uppercase font-bold tracking-widest text-[#D4AF37]">
+                    Hyderabad's Premier Wedding Cinematography
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-gray-400 font-sans leading-relaxed max-w-md">
+                Documenting grand Telugu weddings, Falaknuma palace muhurthams, and high-society receptions across Hyderabad, Goa, and Udaipur with Sony Cinema Line bodies and Hollywood color science.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#171720] border border-[#2A2A38] text-gray-300">
+                  🏆 WedMeGood Gold 2026
+                </span>
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#171720] border border-[#2A2A38] text-gray-300">
+                  ⭐ WeddingSutra SuperStudio
+                </span>
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-[#171720] border border-[#2A2A38] text-[#D4AF37]">
+                  🎥 Sony Alpha Partner
+                </span>
+              </div>
+            </div>
+
+            {/* Column 2: Studio Director Direct Contact (4 cols) */}
+            <div className="lg:col-span-4 space-y-3">
+              <span className="font-cinzel text-xs font-bold uppercase tracking-widest text-[#D4AF37] block">
+                Flagship Studio &amp; Helplines
+              </span>
+
+              <div className="space-y-2.5 text-xs text-gray-300">
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-white block">Jubilee Hills Flagship Studio:</span>
+                    <span className="text-gray-400">Road No. 36, Jubilee Hills, Hyderabad – 500033 (Opp. Neeru's)</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Director Srikanth Mallavarapu:</span>
+                    <a href={ownerWhatsAppUrl} target="_blank" rel="noopener noreferrer" className="font-mono text-white hover:text-[#25D366] transition-colors">
+                      +91 {ownerPhone} (Direct WhatsApp)
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Studio Concierge Email:</span>
+                    <a href={ownerMailtoUrl} className="font-mono text-white hover:text-[#D4AF37] transition-colors">
+                      {ownerEmail}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Column 3: Quick Navigation (3 cols) */}
+            <div className="lg:col-span-3 space-y-3">
+              <span className="font-cinzel text-xs font-bold uppercase tracking-widest text-[#D4AF37] block">
+                Studio Portfolios
+              </span>
+
+              <ul className="space-y-2 text-xs text-gray-400">
+                <li>
+                  <button onClick={() => setIsShowreelOpen(true)} className="hover:text-white transition-colors flex items-center gap-1.5">
+                    <Play className="w-3 h-3 text-[#D4AF37]" />
+                    <span>Watch 2026 Showreel</span>
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsSnapBotOpen(true)} className="hover:text-white transition-colors flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+                    <span>Instant SnapBot AI Quote</span>
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsPackageCustomizerOpen(true)} className="hover:text-white transition-colors flex items-center gap-1.5">
+                    <Calculator className="w-3 h-3 text-[#D4AF37]" />
+                    <span>Interactive Quote Customizer</span>
+                  </button>
+                </li>
+                <li>
+                  <span className="text-gray-500 block pt-1 font-mono text-[11px]">
+                    Operating Hours: 10:00 AM – 8:30 PM IST
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Copyright & Guarantee Bar */}
+          <div className="pt-8 border-t border-[#1C1C26] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-500">
+            <div>
+              © 2026 PixelStory Studios. All Rights Reserved. Crafted for Grand Hyderabad Celebrations.
+            </div>
+            <div className="flex items-center gap-4 text-gray-400 font-mono">
+              <span>Powered by SnapMitra Lead Engine</span>
+              <span>•</span>
+              <span className="text-[#D4AF37]">4K Cinema Fleet Guaranteed</span>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* Fullscreen Photo Lightbox Modal */}
       {activeLightbox && (
