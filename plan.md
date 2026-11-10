@@ -107,6 +107,20 @@ This document details all recently implemented features, testing scenarios execu
 * **Grand Editorial Luxury Studio Footer**:
   - Comprehensive luxury footer with Jubilee Hills flagship studio address (Road No. 36), direct director WhatsApp and email lines, WedMeGood / WeddingSutra accolades, operating hours, and legal notices.
 
+### 14. Intelligent Category-Specific Guardrail Responses & Seamless Conversation Bridge
+* **Problem Solved**:
+  - Previously, the chatbot returned the exact same generic canned reply (*"Our lead photographer will review your request and call back with a custom quote."*) for any outstation travel inquiry (e.g. Goa destination beach wedding) as well as any equipment modification inquiry (e.g. RED Komodo cinema cameras).
+  - Furthermore, after giving the guardrail reply, the conversation froze without prompting the user for their name or date, leaving prospective clients stranded.
+* **Implementation**:
+  - **Context-Aware Luxury Responses**: Added `getDetailedGuardrailResponse()` in `src/services/guardrails.ts` that tailors answers across 4 distinct categories while strictly including the required review clause:
+    1. **✈️ Outstation & Destination Weddings (Goa, Udaipur, Rajasthan, Vizag)**: Confirms nationwide travel capabilities, outlines transparent travel/stay logistics at actuals, and retains lead director review.
+    2. **🎥 Camera & Rig Modifications (RED Komodo 6K, Arri Alexa, Cooke Anamorphic, Sony FX6/FX3)**: Details flagship Sony FX6/FX3 G-Master setup and cinema-grade workflow (focus pullers, DIT data management) for RED/Arri upgrades.
+    3. **🗓️ Multi-Day Wedding Celebrations (Haldi, Mehendi, Sangeet, Muhurtham, Reception)**: Outlines dedicated senior crew teams and same-day LED wall teaser edits.
+    4. **💎 Pricing & Discount Inquiries**: Explains transparent luxury pricing policy with value-add upgrade options (complimentary 4K drone or extra royal album) for upfront advances.
+  - **Domain Badge Indicators**: Messages now render custom badges like `✈️ Destination Travel Policy • Lead Director Review` or `🎥 Custom Cinema Rig Policy • Technical Director Review` instead of a plain warning label.
+  - **Conversational Bridge**: After answering the special inquiry, SnapBot automatically queues the next uncompleted step (e.g. *"To help Director Srikanth prepare your customized proposal, may I know your name first?"*) after 1.2s, so the booking flow continues seamlessly.
+  - **Admin CRM Logging**: Special requests are tracked in `specialInquiries` and automatically populated into the lead's `notes` and `chat_summary` for studio admin follow-up.
+
 
 
 ---
@@ -140,8 +154,7 @@ This document details all recently implemented features, testing scenarios execu
 | **TC-23** | 4K Cinematic Showreel Bento Card | 1. Scroll past AI Vision Matcher.<br>2. Observe the full-width showreel bento card with pulsing play button.<br>3. Click anywhere on card. | Fullscreen 4K cinema showreel modal launches smoothly. | ✅ PASS |
 | **TC-24** | Studio Standards Bento Grid | 1. Scroll to "Engineered for Timeless Perfection".<br>2. Hover over the 6 capability cards (Sony FX6, Drone, 48h Teaser, Milan Albums, 32-bit Audio, Zero-delay Guarantee). | Cards tilt with 3D perspective and dynamic golden spotlights follow mouse position. | ✅ PASS |
 | **TC-25** | Grand Editorial Luxury Footer | 1. Scroll to bottom of homepage.<br>2. Verify studio branding, Jubilee Hills address, direct phone/email links, operating hours, and industry accolades. | Fully styled luxury dark editorial footer is visible with clickable helplines and accolades. | ✅ PASS |
-
-
+| **TC-26** | Intelligent Category-Specific Guardrail Responses | 1. Open SnapBot Concierge.<br>2. Ask about outstation travel: *"Can your team travel outside Hyderabad for our beach wedding in Goa?"*<br>3. Ask about camera upgrades: *"We want camera modifications with RED Komodo cinema cameras instead of standard ones."* | Each inquiry receives a specific, authoritative domain response (details Goa destination logistics for query 1, and RED Komodo/Sony FX6 cinema glass workflow for query 2) instead of identical generic text. Each response displays a category badge and seamlessly follows up asking for the client's name/contact. | ✅ PASS |
 
 ---
 
@@ -155,15 +168,22 @@ This document details all recently implemented features, testing scenarios execu
 3. **Test Background Slides**:
    - Watch the background images transition between the 6 curated photography shots.
    - Click the slide counter pills (01 through 06) at the bottom of the hero banner.
-4. **Test SnapBot Lead Capture**:
-   - Click the bottom-right floating button: **"Check Availability & Get Quote"**.
+4. **Test SnapBot Intelligent Guardrails & Unique Answers**:
+   - Open SnapBot Concierge.
+   - Click "Hackathon Guardrail Tester" or type *"Can your team travel outside Hyderabad for our beach wedding in Goa?"*.
+   - Observe the tailored response for Goa destination wedding logistics with a dedicated policy badge.
+   - Next, type *"We want camera modifications with RED Komodo cinema cameras instead of standard ones."*.
+   - Observe the distinct response detailing RED Komodo, Sony FX6 Cinema Line, and Cooke anamorphic optics.
+   - Notice how SnapBot does not freeze: it automatically prompts *"To help Director Srikanth prepare your customized proposal, may I know your name first?"*.
+5. **Test SnapBot Lead Capture**:
    - Type your name.
    - When asked for WhatsApp or email, enter `srikanthmallavarapu2@gmail.com`.
    - Select event type (*Birthday*), pick a date, and select guest count (*100*).
    - Complete the quote flow.
-5. **Verify in Admin Portal**:
+6. **Verify in Admin Portal**:
    - Switch to **Admin Portal** using the top-right toggle (`admin` / `admin`).
    - Check the top row for your new lead: verify your email is shown with a mail icon, and NOT prefixed with `+91`.
    - Click the row to open the Lead Drawer.
+   - Notice the special inquiries (Destination travel / Camera modifications) logged in the lead details and WhatsApp pitch.
    - Click **"Official PDF Quote"** to view and print the formal invoice.
 

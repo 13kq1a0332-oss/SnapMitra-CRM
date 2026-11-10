@@ -13,11 +13,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
-import { checkGuardrails, STRICT_GUARDRAIL_RESPONSE, GUARDRAIL_DEMO_PROMPTS } from '../services/guardrails';
+import { checkGuardrails, STRICT_GUARDRAIL_RESPONSE, getDetailedGuardrailResponse, GUARDRAIL_DEMO_PROMPTS } from '../services/guardrails';
 import { EventType, LeadLabel } from '../types/lead';
 import { determineLeadLabel, calculateBaseQuote, generateWhatsAppPitch, formatINR, cleanContactInfo } from '../services/leadService';
 import { triggerGoldConfetti } from './ui/ConfettiTrigger';
-
 
 interface ChatMessage {
   id: string;
@@ -25,6 +24,7 @@ interface ChatMessage {
   text: string;
   timestamp: Date;
   isGuardrail?: boolean;
+  guardrailBadge?: string;
 }
 
 type Step = 'name' | 'phone' | 'event_type' | 'custom_event_name' | 'event_date' | 'guest_count' | 'addons' | 'completed';
@@ -46,6 +46,7 @@ export const SnapBotModal: React.FC = () => {
   const [showGuardrailMenu, setShowGuardrailMenu] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [specialInquiries, setSpecialInquiries] = useState<string[]>([]);
 
   // Collected Lead data
   const [leadData, setLeadData] = useState<{
@@ -114,6 +115,7 @@ export const SnapBotModal: React.FC = () => {
     setCurrentStep('name');
     setCompletedLeadSummary(null);
     setSelectedAddons([]);
+    setSpecialInquiries([]);
     setLeadData({
       name: '',
       phone: '',
@@ -138,10 +140,11 @@ export const SnapBotModal: React.FC = () => {
     setCurrentStep('name');
     setCompletedLeadSummary(null);
     setSelectedAddons([]);
+    setSpecialInquiries([]);
     startConversation();
   };
 
-  const addBotMessage = (text: string, isGuardrail = false, delayMs = 600) => {
+  const addBotMessage = (text: string, isGuardrail = false, delayMs = 600, guardrailBadge?: string) => {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -153,6 +156,7 @@ export const SnapBotModal: React.FC = () => {
           text,
           timestamp: new Date(),
           isGuardrail,
+          guardrailBadge,
         },
       ]);
     }, delayMs);
@@ -222,10 +226,45 @@ export const SnapBotModal: React.FC = () => {
     setMessages((prev) => [...prev, userMsg]);
     setInputText('');
 
-    // Check STRICT Guardrail Rule FIRST
+    // Check Guardrail Policy with domain-tailored answers
     const guardrailCheck = checkGuardrails(text);
     if (guardrailCheck.triggered) {
-      addBotMessage(STRICT_GUARDRAIL_RESPONSE, true, 500);
+      const detailedAnswer = getDetailedGuardrailResponse(guardrailCheck, leadData.name);
+      
+      const badgeText = 
+        guardrailCheck.category === 'travel'
+          ? '✈️ Destination Travel Policy • Lead Director Review'
+          : guardrailCheck.category === 'equipment'
+          ? '🎥 Custom Cinema Rig Policy • Technical Director Review'
+          : guardrailCheck.category === 'multiday'
+          ? '🗓️ Multi-Day Bespoke Itinerary • Studio Director Review'
+          : '💎 Transparent Luxury Pricing Policy • Studio Director Review';
+
+      addBotMessage(detailedAnswer, true, 500, badgeText);
+
+      // Track inquiry in specialInquiries list
+      const reason = guardrailCheck.reason || guardrailCheck.category || 'Special Custom Request';
+      setSpecialInquiries((prev) => (prev.includes(reason) ? prev : [...prev, reason]));
+
+      // Do NOT leave the user stranded! Seamlessly bridge to the next lead capture prompt:
+      setTimeout(() => {
+        if (currentStep === 'name') {
+          addBotMessage(`To help Director Srikanth prepare your customized proposal, may I know your name first?`, false, 600);
+        } else if (currentStep === 'phone') {
+          addBotMessage(`Could you please share your WhatsApp number or email ID so we can send you our portfolio deck?`, false, 600);
+        } else if (currentStep === 'event_type') {
+          addBotMessage(`What type of event are you celebrating? (Wedding, Pre-Wedding, Birthday, Corporate, or Other)`, false, 600);
+        } else if (currentStep === 'custom_event_name') {
+          addBotMessage(`Could you tell me the specific celebration name (e.g. Half-Saree, Housewarming, Anniversary)?`, false, 600);
+        } else if (currentStep === 'event_date') {
+          addBotMessage(`When is your planned celebration date? (e.g. 2026-12-14 or December 14)`, false, 600);
+        } else if (currentStep === 'guest_count') {
+          addBotMessage(`Approximately how many guests are you expecting at the venue?`, false, 600);
+        } else if (currentStep === 'addons') {
+          addBotMessage(`Do you have any signature add-on preferences like 4K Drone, Extra Royal Album for In-Laws, or Same-Day LED Wall edit?`, false, 600);
+        }
+      }, 1200);
+
       return;
     }
 
@@ -385,10 +424,11 @@ export const SnapBotModal: React.FC = () => {
     const label = determineLeadLabel(eventType);
 
     const addonPhrase = addons.length > 0 ? ` Addons requested: ${addons.join(', ')}.` : '';
+    const specialPhrase = specialInquiries.length > 0 ? ` Special Inquiries: ${specialInquiries.join('; ')}.` : '';
 
     const chatSummary = `Exclusive ${friendlyEventName} celebration for ~${guests} guests on ${date}.\nClient requested ${
       isLuxury ? 'Platinum luxury coverage with 4K cinema & candid team' : 'Gold standard coverage package'
-    }.${addonPhrase}`;
+    }.${addonPhrase}${specialPhrase}`;
 
     const whatsappDraft = generateWhatsAppPitch({
       client_name: name,
@@ -445,6 +485,7 @@ export const SnapBotModal: React.FC = () => {
           notes: [
             customName ? `Celebration: ${customName}` : '',
             email ? `Client Email: ${email}` : '',
+            specialInquiries.length > 0 ? `Special Requests: ${specialInquiries.join('; ')}` : '',
             'Captured via SnapBot with Guardrail validation',
           ]
             .filter(Boolean)
@@ -578,8 +619,8 @@ export const SnapBotModal: React.FC = () => {
               >
                 {msg.isGuardrail && (
                   <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-1">
-                    <ShieldAlert className="w-3 h-3" />
-                    <span>Enforced Guardrail Response</span>
+                    <ShieldAlert className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span>{msg.guardrailBadge || 'Enforced Guardrail Response'}</span>
                   </div>
                 )}
                 <p className="whitespace-pre-line">{msg.text}</p>

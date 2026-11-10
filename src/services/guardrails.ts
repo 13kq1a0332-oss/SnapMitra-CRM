@@ -5,7 +5,40 @@ export interface GuardrailMatch {
   triggered: boolean;
   category?: 'discount' | 'multiday' | 'travel' | 'equipment';
   reason?: string;
+  badgeLabel?: string;
 }
+
+/**
+ * Returns an intelligent, context-aware luxury response specific to the guardrail category.
+ * Every response contains the mandated studio review clause while answering the user's exact query with domain authority.
+ */
+export function getDetailedGuardrailResponse(match: GuardrailMatch, clientName?: string): string {
+  const nameSalutation = clientName ? `${clientName}, ` : '';
+
+  switch (match.category) {
+    case 'travel':
+      return `${nameSalutation}Yes, absolutely! ✈️ While our flagship studio is in Jubilee Hills, Hyderabad, PixelStory Studios frequently documents destination celebrations across India (Goa beach ceremonies, Udaipur palaces, Bangalore, Vizag, and Rajasthan).
+
+For destination shoots, crew travel and accommodation logistics are budgeted transparently at actuals. Our lead photographer will review your destination logistics and call back with a custom quote.`;
+
+    case 'equipment':
+      return `${nameSalutation}Splendid cinematographic choice! 🎥 While our standard flagship fleet operates full-frame Sony FX6 & FX3 Cinema Line cameras with G-Master prime glass (50mm f/1.2 & 85mm f/1.4 GM), we frequently deploy RED Komodo 6K, RED V-Raptor, and Cooke Anamorphic cine glass for high-end cinematic productions.
+
+Custom cinema packages require specialized focus pullers and DIT data management. Our lead photographer will review your camera modifications and call back with a custom quote.`;
+
+    case 'multiday':
+      return `${nameSalutation}We specialize in grand multi-day celebrations! 🌟 For 2 to 4-day weddings spanning Haldi, Pellikuthuru, Sangeet, Vedic Muhurtham, and Reception, we offer dedicated multi-day bespoke coverage with dedicated senior crews and same-day LED wall teaser edits.
+
+Our lead photographer will review your multi-day itinerary and call back with a custom quote.`;
+
+    case 'discount':
+    default:
+      return `${nameSalutation}At PixelStory Studios, our pricing is standardized and transparent with zero hidden fees to guarantee prime Sony Cinema Line equipment and senior directors for every celebration.
+
+However, for full upfront advance or multi-event bookings, our studio director can curate custom value add-ons (such as complimentary 4K drone aerials or an extra royal leather album). Our lead photographer will review your request and call back with a custom quote.`;
+  }
+}
+
 
 const DISCOUNT_PATTERNS = [
   /discount/i,
