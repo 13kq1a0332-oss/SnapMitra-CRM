@@ -32,6 +32,12 @@ import {
   Crown,
 } from 'lucide-react';
 import { useLeads } from '../context/LeadContext';
+import { GoldenParticlesCanvas } from './ui/GoldenParticlesCanvas';
+import { SpotlightCard } from './ui/SpotlightCard';
+import { MagneticButton } from './ui/MagneticButton';
+import { AnimatedCounter } from './ui/AnimatedCounter';
+import { InfiniteMarquee } from './ui/InfiniteMarquee';
+import { triggerGoldConfetti } from './ui/ConfettiTrigger';
 
 interface BackgroundSlide {
   id: number;
@@ -404,6 +410,9 @@ export const CustomerView: React.FC = () => {
           );
         })}
 
+        {/* ThreeUI & WebGL-inspired Golden Bokeh Particles & Candlelite Embers */}
+        <GoldenParticlesCanvas className="z-[3]" particleCount={55} interactive={true} />
+
         {/* Ambient Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-64 bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
 
@@ -439,61 +448,69 @@ export const CustomerView: React.FC = () => {
             <strong className="text-[#D4AF37] font-medium"> SnapBot</strong> for an instant verified quote.
           </p>
 
-          {/* Action Buttons */}
+          {/* Action Buttons with GSAP Magnetic Physics & Confetti */}
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <button
+            <MagneticButton
+              magneticStrength={0.22}
+              triggerConfettiOnClick={true}
               onClick={() => setIsSnapBotOpen(true)}
-              className="px-6 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-xs sm:text-sm shadow-luxury hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+              className="px-6 py-3.5 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-xs sm:text-sm shadow-luxury hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group"
             >
-              <Sparkles className="w-4 h-4 text-black" />
+              <Sparkles className="w-4 h-4 text-black group-hover:rotate-12 transition-transform" />
               <span>Chat with SnapBot AI</span>
-            </button>
+            </MagneticButton>
 
-            <button
+            <MagneticButton
+              magneticStrength={0.2}
               onClick={() => setIsShowreelOpen(true)}
               className="px-5 py-3.5 rounded-full bg-[#181822]/90 hover:bg-[#232330] text-[#D4AF37] border border-[#D4AF37] font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 shadow-sm hover:scale-105"
             >
               <Play className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
               <span>Watch 2026 Showreel</span>
-            </button>
+            </MagneticButton>
 
-            <button
+            <MagneticButton
+              magneticStrength={0.18}
               onClick={() => setIsPackageCustomizerOpen(true)}
               className="px-5 py-3.5 rounded-full bg-[#181822]/90 backdrop-blur-md hover:bg-[#232330] text-gray-200 border border-[#2F2F3D] hover:border-[#D4AF37]/50 font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
             >
               <Calculator className="w-4 h-4 text-[#D4AF37]" />
               <span>Quote Calculator</span>
-            </button>
+            </MagneticButton>
 
             {/* Direct WhatsApp Call Button */}
             <a
               href={ownerWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-3.5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
+              className="px-4 py-3.5 rounded-full bg-[#25D366]/20 hover:bg-[#25D366]/30 border border-[#25D366]/50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center gap-2 hover:scale-105"
             >
               <MessageCircle className="w-4 h-4 text-[#25D366]" />
               <span>WhatsApp Director: {ownerPhone}</span>
             </a>
           </div>
 
-          {/* Trust Badges */}
+          {/* GSAP-Powered Animated Numerical Trust Badges */}
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-gray-300">
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 hover:border-gold/40 transition-colors">
               <Award className="w-4 h-4 text-[#D4AF37]" />
-              <span>850+ Luxury Celebrations</span>
+              <span>
+                <AnimatedCounter value={850} suffix="+" className="font-bold text-white text-sm" /> Luxury Celebrations
+              </span>
             </div>
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 hover:border-gold/40 transition-colors">
               <Film className="w-4 h-4 text-[#D4AF37]" />
               <span>4K Cinema Drone Fleet</span>
             </div>
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 hover:border-gold/40 transition-colors">
               <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
               <span>Zero-Delay Guaranteed Delivery</span>
             </div>
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 hover:border-gold/40 transition-colors">
               <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-              <span>4.9★ Google Reviews (280+ Couples)</span>
+              <span>
+                <AnimatedCounter value={4.9} decimals={1} suffix="★" className="font-bold text-white text-sm" /> Google Reviews (280+ Couples)
+              </span>
             </div>
           </div>
         </div>
@@ -548,38 +565,43 @@ export const CustomerView: React.FC = () => {
       </section>
 
       {/* ============================================================ */}
-      {/* PRESTIGIOUS 5-STAR HYDERABAD VENUES MARQUEE (REALISM BOOST)  */}
+      {/* PRESTIGIOUS 5-STAR HYDERABAD VENUES INFINITE MARQUEE         */}
       {/* ============================================================ */}
-      <section className="border-y border-[#20202A] bg-[#0E0E12] py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <section className="border-y border-[#20202A] bg-[#0E0E12] py-5 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2 shrink-0">
               <Crown className="w-4 h-4 text-[#D4AF37]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                Preferred Cinema Partner Across Hyderabad's Heritage Landmarks:
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-[#D4AF37]">
+                Official Preferred Cinema Partner • Hyderabad Heritage Landmarks
               </span>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap items-center gap-2.5 w-full md:w-auto">
-              {PRESTIGIOUS_VENUES.map((venue, idx) => (
-                <div
-                  key={idx}
-                  className="px-3 py-1.5 rounded-xl bg-[#15151D] border border-[#252530] flex items-center gap-2 hover:border-[#D4AF37]/50 transition-colors"
-                >
-                  <MapPin className="w-3 h-3 text-[#D4AF37] shrink-0" />
-                  <div className="text-left">
-                    <span className="text-xs font-medium text-gray-200 block truncate max-w-[170px] sm:max-w-none">
-                      {venue.name}
-                    </span>
-                    <span className="text-[10px] text-gray-400 block font-mono">
-                      {venue.count}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <span className="text-[10px] text-gray-500 font-mono hidden sm:inline-block">
+              Hover to pause • 850+ celebrations documented
+            </span>
           </div>
         </div>
+
+        <InfiniteMarquee speed="30s">
+          {PRESTIGIOUS_VENUES.map((venue, idx) => (
+            <div
+              key={idx}
+              className="px-4 py-2 rounded-xl bg-[#15151D] border border-[#252530] flex items-center gap-3 hover:border-[#D4AF37]/60 hover:bg-[#1A1A24] transition-all cursor-default shadow-sm"
+            >
+              <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center shrink-0">
+                <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-semibold text-gray-200 block whitespace-nowrap">
+                  {venue.name}
+                </span>
+                <span className="text-[10px] text-gray-400 block font-mono">
+                  {venue.area} • <strong className="text-[#D4AF37] font-semibold">{venue.count}</strong>
+                </span>
+              </div>
+            </div>
+          ))}
+        </InfiniteMarquee>
       </section>
 
       {/* ============================================================ */}
@@ -691,14 +713,18 @@ export const CustomerView: React.FC = () => {
               </div>
             </div>
 
-            {/* AI Real-time Recommendation Card */}
-            <div className="lg:col-span-5 p-6 rounded-2xl bg-[#171722] border border-[#D4AF37]/50 shadow-luxury space-y-4 relative">
+            {/* AI Real-time Recommendation Card with 21st.dev Spotlight & Border Beam */}
+            <SpotlightCard
+              borderBeam={true}
+              enableTilt={false}
+              className="lg:col-span-5 p-6 rounded-2xl bg-[#171722]/95 border-[#D4AF37]/60 shadow-luxury space-y-4 relative"
+            >
               <div className="flex items-center justify-between border-b border-[#2A2A38] pb-3">
                 <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#D4AF37]">
                   <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                   <span>AI Tailored Recommendation</span>
                 </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30">
+                <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/40 shadow-gold-sm">
                   Optimal Match
                 </span>
               </div>
@@ -710,9 +736,9 @@ export const CustomerView: React.FC = () => {
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mt-0.5">
                   {aiMatch.tier}
                 </h3>
-                <div className="font-serif text-2xl font-bold text-[#D4AF37] mt-1">
-                  {aiMatch.price}{' '}
-                  <span className="text-xs font-sans text-gray-400 font-normal">All-Inclusive</span>
+                <div className="font-serif text-2xl font-bold text-[#D4AF37] mt-1 flex items-baseline gap-2">
+                  <span>{aiMatch.price}</span>
+                  <span className="text-xs font-sans text-gray-400 font-normal">All-Inclusive Fixed Quote</span>
                 </div>
               </div>
 
@@ -734,14 +760,16 @@ export const CustomerView: React.FC = () => {
                 </div>
               </div>
 
-              <button
+              <MagneticButton
+                magneticStrength={0.2}
+                triggerConfettiOnClick={true}
                 onClick={() => openSnapBotWithPackage(aiMatch.tier)}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-bold text-xs sm:text-sm shadow-gold-sm hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4"
               >
                 <span>Lock This AI Package with SnapBot</span>
                 <ArrowRight className="w-4 h-4 text-black" />
-              </button>
-            </div>
+              </MagneticButton>
+            </SpotlightCard>
           </div>
         </div>
       </section>
@@ -842,7 +870,9 @@ export const CustomerView: React.FC = () => {
             </div>
             <div>
               <span className="text-[10px] text-gray-400 uppercase block font-semibold">Dynamic Range</span>
-              <span className="font-mono text-gray-200">15+ Stops Calibrated</span>
+              <span className="font-mono text-[#D4AF37] font-bold">
+                <AnimatedCounter value={15} suffix="+" /> Stops Calibrated
+              </span>
             </div>
           </div>
         </div>
@@ -892,29 +922,35 @@ export const CustomerView: React.FC = () => {
         </div>
       </section>
 
-      {/* Portfolio & Packages Section */}
+      {/* Portfolio & Packages Section with 21st.dev Spotlight & ThreeUI 3D Tilt */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#D4AF37] mb-1">
+            <Crown className="w-4 h-4 text-[#D4AF37]" />
+            <span>2026 Production Tier Lineup</span>
+          </div>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white">
             Signature Portfolio Offerings
           </h2>
           <p className="text-xs sm:text-sm text-gray-400 mt-2">
-            Transparent luxury pricing with guaranteed master crew reservation
+            Transparent luxury pricing with guaranteed master crew reservation &amp; interactive 3D physics
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {offerings.map((pkg) => (
-            <div
+            <SpotlightCard
               key={pkg.id}
-              className={`rounded-2xl overflow-hidden glass-card transition-all duration-300 flex flex-col relative group ${
+              enableTilt={true}
+              borderBeam={pkg.highlight}
+              className={`rounded-2xl overflow-hidden transition-all duration-300 flex flex-col relative group ${
                 pkg.highlight
-                  ? 'border-[#D4AF37] shadow-luxury ring-1 ring-[#D4AF37]/50 -translate-y-1'
-                  : 'border-[#27272E] hover:border-[#D4AF37]/40 hover:-translate-y-1'
+                  ? 'border-[#D4AF37]/80 shadow-luxury ring-1 ring-[#D4AF37]/50 -translate-y-1'
+                  : 'border-[#27272E] hover:border-[#D4AF37]/50'
               }`}
             >
               {pkg.highlight && (
-                <div className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black text-[11px] font-bold uppercase tracking-wider py-1 px-4 text-center">
+                <div className="bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black text-[11px] font-bold uppercase tracking-wider py-1 px-4 text-center shadow-gold-sm">
                   ⭐ Studio Masterpiece • Most Requested
                 </div>
               )}
@@ -967,7 +1003,9 @@ export const CustomerView: React.FC = () => {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-[#27272E]/60 space-y-2">
-                  <button
+                  <MagneticButton
+                    magneticStrength={0.16}
+                    triggerConfettiOnClick={true}
                     onClick={() => openSnapBotWithPackage(pkg.name)}
                     className={`w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-200 flex items-center justify-center gap-2 ${
                       pkg.highlight
@@ -977,10 +1015,10 @@ export const CustomerView: React.FC = () => {
                   >
                     <span>{pkg.buttonText}</span>
                     <ArrowRight className="w-4 h-4 text-inherit" />
-                  </button>
+                  </MagneticButton>
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
       </section>
@@ -1049,9 +1087,10 @@ export const CustomerView: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {TESTIMONIALS.map((t, idx) => (
-            <div
+            <SpotlightCard
               key={idx}
-              className="p-6 rounded-2xl glass-card border border-[#27272E] relative flex flex-col justify-between"
+              enableTilt={false}
+              className="p-6 rounded-2xl bg-[#14141B]/90 border border-[#27272E] relative flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -1074,7 +1113,7 @@ export const CustomerView: React.FC = () => {
                 <h4 className="font-serif font-bold text-sm text-white">{t.couple}</h4>
                 <p className="text-[11px] text-gray-400">{t.venue}</p>
               </div>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
       </section>
@@ -1301,9 +1340,11 @@ export const CustomerView: React.FC = () => {
       {/* FLOATING ACTION BUTTON (FAB) AT BOTTOM-RIGHT                  */}
       {/* ============================================================ */}
       <div className="fixed bottom-6 right-6 z-40">
-        <button
+        <MagneticButton
+          magneticStrength={0.15}
+          triggerConfettiOnClick={true}
           onClick={() => setIsSnapBotOpen(true)}
-          className="gold-pulse-btn group relative flex items-center gap-3 px-5 py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-sm sm:text-base shadow-luxury transition-all duration-300 hover:scale-105 active:scale-95"
+          className="gold-pulse-btn group relative flex items-center gap-3 px-5 py-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] text-black font-semibold text-sm sm:text-base shadow-luxury transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
           aria-label="Check Availability & Get Quote"
         >
           <div className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center">
@@ -1314,7 +1355,7 @@ export const CustomerView: React.FC = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-60"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-black"></span>
           </span>
-        </button>
+        </MagneticButton>
       </div>
     </div>
   );

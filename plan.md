@@ -77,6 +77,27 @@ This document details all recently implemented features, testing scenarios execu
 * High-status venue badges: Taj Falaknuma Palace, Novotel HICC, Fort Grand Shamshabad, Ramoji Film City, ITC Kohenur, Golkonda Resorts.
 * Real-time discreet social proof ticker in bottom-left displaying recent bookings and sneak peek deliveries across Hyderabad.
 
+### 12. World-Class UI & Motion Architecture (21st.dev, ThreeUI, TasteSkill, GSAP)
+* **ThreeUI & Ambient 3D Particle Canvas (`GoldenParticlesCanvas.tsx`)**:
+  - Implements an ambient luxury 3D atmosphere with 55+ drifting golden bokeh embers floating upwards like palace candlelight.
+  - Interactive cursor repulsion and inertial drift reacting to user mouse movements at silky 60fps.
+* **21st.dev Spotlight & 3D Tilt Cards (`SpotlightCard.tsx`)**:
+  - Cursor-following golden radial spotlight (`radial-gradient`) tracking mouse coordinates across the card surface.
+  - 3D perspective tilt (`rotateX`, `rotateY`, `scale3d`) calculated from normalized distance to card center with specular lighting sheen.
+  - Glowing gold border-beam on the featured Studio Masterpiece Platinum package card.
+* **GSAP Magnetic Button Physics (`MagneticButton.tsx`)**:
+  - Physics-based spring attraction pulling CTA buttons smoothly toward the user's cursor within their proximity.
+  - Elastic recoil snapping back to origin with GSAP `elastic.out` easing when mouse exits.
+* **GSAP Animated Numerical Counters (`AnimatedCounter.tsx`)**:
+  - Viewport-triggered animated rolling number tickers for conversion statistics (`850+ Luxury Celebrations`, `4.9★ Google Reviews`, `15+ Stops Dynamic Range`).
+* **Infinite Velocity-Scroll Venue Marquee (`InfiniteMarquee.tsx`)**:
+  - Seamless continuous horizontal marquee ribbon showcasing Hyderabad's premier wedding destinations with edge fade gradients and pause-on-hover.
+* **Celebration Confetti Cannon (`ConfettiTrigger.ts`)**:
+  - Royal champagne gold and white diamond confetti explosion triggered on high-intent actions (e.g. "Chat with SnapBot AI", "Lock AI Package", "Check Availability & Get Quote").
+* **Taste Skill Anti-Slop Design Polish**:
+  - Editorial typographic hierarchy with Playfair Display serif paired with crisp micro-labels, obsidian glass depth, and hairline gold accents.
+
+
 ---
 
 ## 🧪 Test Scenarios & Verification Matrix
@@ -98,6 +119,13 @@ This document details all recently implemented features, testing scenarios execu
 | **TC-13** | Before & After Color Grade Slider | 1. On homepage, scroll to "From Camera Sensor to Golden Masterpiece".<br>2. Drag the slider handle left and right. | Visually reveals flat raw Sony S-Log3 sensor output vs. warm signature champagne gold master grade. | ✅ PASS |
 | **TC-14** | 4K Cinematic Showreel Modal | 1. Click "Watch 2026 Showreel" in hero banner. | High-definition cinema wedding showreel opens with audio toggle and direct SnapBot booking CTA. | ✅ PASS |
 | **TC-15** | Live Social Proof Ticker | 1. Observe bottom-left corner of screen on desktop. | Real-time studio booking notification appears and cycles every 6.5s (can be dismissed or clicked). | ✅ PASS |
+| **TC-16** | ThreeUI Golden Particles Canvas | 1. Open Customer View homepage.<br>2. Move cursor around the hero banner. | 55+ golden glowing embers drift upwards; embers near cursor gently swirl and repulse with fluid physics. | ✅ PASS |
+| **TC-17** | 21st.dev Spotlight & 3D Tilt Cards | 1. Scroll to Signature Portfolio Offerings.<br>2. Hover cursor over the package cards. | Card tilts in 3D perspective following mouse coordinates; radial gold spotlight illuminates card interior and border; Platinum card radiates a glowing border beam. | ✅ PASS |
+| **TC-18** | GSAP Magnetic Button Attraction | 1. Hover cursor near the "Chat with SnapBot AI" or "Watch 2026 Showreel" button.<br>2. Move cursor slightly outside button perimeter. | Button smoothly pulls towards cursor with spring physics, and elastically snaps back to position upon exit. | ✅ PASS |
+| **TC-19** | GSAP Animated Numerical Counters | 1. Scroll into view of the hero trust badges.<br>2. Observe number counters. | Numbers animate smoothly from 0 to `850+` celebrations, `4.9★` reviews, and `15+` stops dynamic range. | ✅ PASS |
+| **TC-20** | Infinite Marquee Venue Ribbon | 1. Scroll to Preferred Cinema Partner section.<br>2. Observe venue cards.<br>3. Hover cursor over any venue card. | Venue cards scroll horizontally in a seamless loop; hovering cursor pauses animation cleanly. | ✅ PASS |
+| **TC-21** | Royal Gold Celebration Confetti | 1. Click "Chat with SnapBot AI" in hero, "Lock This AI Package", or the bottom-right floating button. | High-speed champagne gold and diamond confetti explodes across the screen with secondary cannon bursts. | ✅ PASS |
+
 
 ---
 
